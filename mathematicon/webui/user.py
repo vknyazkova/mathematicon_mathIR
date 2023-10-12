@@ -51,7 +51,8 @@ class User(flask_login.UserMixin, WebDBHandler):
     def get(self, username):
         res = self.get_user_by_uname(username)
         if res:
-            self.id, self.username, self.password, self.salt, self.email = res
+            for key in res:
+                setattr(self, key, res[key])
             return self
         else:
             return None
