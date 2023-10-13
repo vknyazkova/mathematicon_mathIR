@@ -3,15 +3,15 @@ import os
 
 import flask_login
 
-from ..backend.models.database import WebDBHandler
+from ..backend.models.database import UserDBHandler
 
 N_ITERS = 500
 
 
-class User(flask_login.UserMixin, WebDBHandler):
+class User(flask_login.UserMixin, UserDBHandler):
 
     def __init__(self, db_path):
-        WebDBHandler.__init__(self, db_path)
+        UserDBHandler.__init__(self, db_path)
         self.email = None
         self.salt = None
         self.password = None

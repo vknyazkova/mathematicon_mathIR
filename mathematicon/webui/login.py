@@ -6,7 +6,7 @@ from flask_login import LoginManager, login_required, login_user, logout_user, c
 
 from .app import app
 from .user import User
-from ..backend.models.database import WebDBHandler
+from ..backend.models.database import UserDBHandler
 from ..config import DATA_PATH, DB_NAME
 
 DB_PATH = Path(DATA_PATH, DB_NAME)
@@ -34,7 +34,7 @@ def reg_page(lang):
         password = request.form['password']
         email = request.form['email']
         hashed_password, salt = User.hash_password(password)
-        db = WebDBHandler(DB_PATH)
+        db = UserDBHandler(DB_PATH)
         try:
             db.add_user(username, hashed_password, salt, email)
             flash('You\'ve been successfully logged-in')
