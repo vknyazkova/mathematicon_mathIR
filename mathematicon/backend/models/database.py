@@ -41,7 +41,7 @@ class TextDBHandler(DBHandler):
 
     def add_math_branch(self, name: str, commit: bool = True):
         self.conn.execute('''
-        INSERT or IGNORE INTO math_brances (name)
+        INSERT or IGNORE INTO math_branches (name)
         VALUES (?)''', (name, ))
         if commit:
             self.conn.commit()
@@ -59,8 +59,8 @@ class TextDBHandler(DBHandler):
         Args:
             text_info: instance of DatabaseText class
         """
-        with self.conn:
-            text_info = text.dict_()
+        text_info = text.dict_()
+        try:
             self.add_math_branch(text_info['branch'], commit=False)
             self.add_text_level(text_info['level'], commit=False)
 
@@ -76,10 +76,14 @@ class TextDBHandler(DBHandler):
             ON CONFLICT (filename)
             DO UPDATE SET
             title = :title,
-            youtube_link = : yb_link,
+            youtube_link = :yb_link,
             level_id = (SELECT id FROM text_difficulty WHERE name = :level),
-            branch = (SELECT id FROM math_branches WHERE name = :branch)
+            math_branch_id = (SELECT id FROM math_branches WHERE name = :branch)
             WHERE filename = :filename''', text_info)
+            self.conn.commit()
+        except Exception as e:
+            self.conn.rollback()
+            print(e)
 
     def add_sentence(self, sentence: DatabaseSentence) -> int:
         """
@@ -90,15 +94,18 @@ class TextDBHandler(DBHandler):
 
         """
         sentence_info = sentence.dict_()
-        with self.conn:
-            cur = self.conn.execute('''
+        try:
+            self.conn.execute('''
             INSERT INTO sents (text_id, sent, lemmatized, pos_in_text)
             VALUES (
             (SELECT id FROM texts WHERE filename = :filename), 
             :sent_text, 
             :lemmatized, 
             :pos_in_text)''', sentence_info)
-        return cur.fetchone()[0]
+            self.conn.commit()
+        except Exception as e:
+            self.conn.rollback()
+            print(e)
 
     def add_lemmas(self, lemmas: Iterable[Tuple[str, ]], commit: bool = True):
         self.conn.executemany('''
@@ -121,45 +128,54 @@ class TextDBHandler(DBHandler):
             sentence: instance of DatabaseSentence class
         """
         lemmas = sentence.tokens_attr('lemma_', 'tuple')
-        poses = sentence.tokens_attr('lemma_', 'tuple')
-        tokens_info = sentence.token_info_generator()
-        with self.conn:
+        poses = sentence.tokens_attr('tag_', 'tuple')
+        tokens_info = iter(sentence)
+        try:
             self.add_lemmas(lemmas, commit=False)
             self.add_poses(poses, commit=False)
             self.conn.executemany('''
-            INSERT INTO tokens (sent_id, token, whitespace, pos_in_text, char_start, char_end, pos_id, lemma_id)
+            INSERT INTO tokens (sent_id, token, whitespace, pos_in_sent, char_start, char_end, pos_id, lemma_id)
             VALUES (
             (SELECT sents.id FROM sents 
             LEFT JOIN texts 
             ON texts.id = sents.text_id 
             WHERE texts.filename = :filename 
-            AND sents.pos_in_text = :text_pos_in_text),
+            AND sents.pos_in_text = :sent_pos_in_text),
             :token,
             :whitespace, 
-            :pos_in_text,
+            :pos_in_sent,
             :char_start, 
             :char_end,
-            (SELECT id FROM poses WHERE name = :pos),
+            (SELECT id FROM pos WHERE name = :pos),
             (SELECT id FROM lemmas WHERE name = :lemma))''', tokens_info)
+            self.conn.commit()
+        except Exception as e:
+            self.conn.rollback()
+            print(e)
 
     def update_sentence_tokens_info(self, sentence: DatabaseSentence):
         lemmas = sentence.tokens_attr("lemma_", "tuple")
-        poses = sentence.tokens_attr("lemma_", "tuple")
-        tokens_info = sentence.token_info_generator()
-        with self.conn:
+        poses = sentence.tokens_attr("tag_", "tuple")
+        tokens_info = iter(sentence)
+        try:
             self.add_lemmas(lemmas, commit=False)
             self.add_poses(poses, commit=False)
-            self.conn.executemany('''
-            UPDATE tokens
-            SET 
-            lemma_id = (SELECT id FROM lemmas WHERE name = :lemma),
-            pos_id = (SELECT id FROM poses WHERE name = :pos)
-            WHERE sent_id = (SELECT sents.id FROM sents 
-            LEFT JOIN texts 
-            ON texts.id = sents.text_id 
-            WHERE texts.filename = :filename 
-            AND sents.pos_in_text = :text_pos_in_text)
-            AND pos_in_sent = :pos_in_sent''', tokens_info)
+            self.conn.executemany(
+                '''
+                    UPDATE tokens
+                    SET 
+                    lemma_id = (SELECT id FROM lemmas WHERE name = :lemma),
+                    pos_id = (SELECT id FROM pos WHERE name = :pos)
+                    WHERE sent_id = (SELECT sents.id FROM sents 
+                    LEFT JOIN texts 
+                    ON texts.id = sents.text_id 
+                    WHERE texts.filename = :filename 
+                    AND sents.pos_in_text = :sent_pos_in_text)
+                    AND pos_in_sent = :pos_in_sent''', tokens_info)
+            self.conn.commit()
+        except Exception as e:
+            self.conn.rollback()
+            print(e)
 
 
 if __name__ == '__main__':

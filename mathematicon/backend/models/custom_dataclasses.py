@@ -37,7 +37,7 @@ class QueryInfo:
 class DatabaseToken:
     def __init__(self,
                  spacy_token: Token,
-                 pos_in_text: int,
+                 pos_in_sent: int,
                  char_start: int,
                  char_end: int,
                  filename: str,
@@ -47,7 +47,7 @@ class DatabaseToken:
         self.lemma = spacy_token.lemma_
         self.pos = spacy_token.pos_
 
-        self.pos_in_text = pos_in_text
+        self.pos_in_sent = pos_in_sent
         self.char_start = char_start
         self.char_end = char_end
         self.filename = filename
@@ -58,10 +58,10 @@ class DatabaseText:
     def __init__(self,
                  sentences: Doc,
                  filename: str,
-                 title: str,
-                 yb_link: str,
-                 branch: str,
-                 level: str):
+                 title: str = None,
+                 yb_link: str = None,
+                 branch: str = None,
+                 level: str = None):
         self._sentences = sentences
 
         self.filename = filename
@@ -117,17 +117,17 @@ class DatabaseSentence:
             elif out_style == 'dict':
                 yield {attr_name, attr_val}
 
-    def token_info_generator(self):
+    def __iter__(self):
         char_cur = 0
         for i, t in enumerate(self._sent, start=1):
             char_end = char_cur + len(t.text)
             token = DatabaseToken(spacy_token=t,
-                                  pos_in_text=i,
+                                  pos_in_sent=i,
                                   char_start=char_cur,
                                   char_end=char_end + 1,
                                   filename=self.filename,
                                   sent_pos_in_text=self.pos_in_text)
-            yield token
+            yield vars(token)
             char_cur = char_end + len(t.whitespace_)
 
     def dict_(self):
