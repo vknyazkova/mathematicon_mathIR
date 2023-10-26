@@ -28,9 +28,9 @@ class HTMLsentence:
 
 @dataclass
 class QueryInfo:
-    tokens: List[HTMLSpan] = field(default_factory=list)
-    pos_string: str = ''
-    lemmatized: str = ''
+    tokens: List[HTMLWord] = field(default_factory=list)
+    # poses: List[str] = field(default_factory=list)
+    # lemmas: List[str] = field(default_factory=list)
     formula: List[str] = None
 
 
@@ -80,6 +80,9 @@ class DatabaseText:
             yield sentence
 
     def dict_(self):
+        """
+        Returns: attributes that are related to database fields
+        """
         return {k: v for k, v in vars(self).items() if not k.startswith('_')}
 
 

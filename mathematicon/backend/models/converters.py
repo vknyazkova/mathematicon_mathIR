@@ -29,7 +29,7 @@ class YamlConverter:
     def load_yamls(filepaths: Iterable[str, os.PathLike],
                    preprocess: Callable[[str], str]) -> Dict[Path, Dict[str, Any]]:
         """
-        Reads texts that are stored in yaml files
+        Read texts that are stored in yaml files
         Args:
             filepaths: iterable of paths to yaml files
             preprocess: callable that preprocesses text field from the yaml file
