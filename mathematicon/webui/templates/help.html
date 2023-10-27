@@ -1,91 +1,263 @@
-{% extends 'base.html' %}
-{% block content %}
-<link rel="stylesheet" href="static/css/help.css" media="screen">
-<section class="u-align-center u-clearfix u-custom-color-1 u-section-1" id="sec-687a">
-      <div class="u-clearfix u-sheet u-sheet-1">
-        <h2 class="u-text u-text-default u-text-1" data-ru="Вопросы и факты" data-en="Facts &amp; Questions"></h2>
-          <div class="u-accordion u-collapsed-by-default u-spacing-13 u-accordion-1">
-          <div class="u-accordion-item">
-            <a class="u-accordion-link u-active-custom-color-2 u-button-style u-grey-5 u-radius-8 u-text-active-white u-text-grey-60 u-text-hover-black u-accordion-link-1" id="link-accordion-0781" aria-controls="accordion-0781" aria-selected="false">
-              <span class="u-accordion-link-text" data-ru="Какие частеречные обозначения мы используем?" data-en="What pos tags do we use?"></span><span class="u-accordion-link-icon u-icon u-text-grey-40 u-icon-1"><svg class="u-svg-link" preserveAspectRatio="xMidYMin slice" viewBox="0 0 512 512" style=""><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#svg-efcb"></use></svg><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" xml:space="preserve" class="u-svg-content" viewBox="0 0 512 512" x="0px" y="0px" id="svg-efcb" style="enable-background:new 0 0 512 512;"><g><g><path d="M509.121,125.966c-3.838-3.838-10.055-3.838-13.893,0L256.005,365.194L16.771,125.966c-3.838-3.838-10.055-3.838-13.893,0    c-3.838,3.838-3.838,10.055,0,13.893l246.18,246.175c1.842,1.842,4.337,2.878,6.947,2.878c2.61,0,5.104-1.036,6.946-2.878    l246.17-246.175C512.959,136.021,512.959,129.804,509.121,125.966z"></path></g>
-</g></svg></span>
-            </a>
-            <div class="u-accordion-pane u-container-style u-white u-accordion-pane-1" id="accordion-0781" aria-labelledby="link-accordion-0781">
-              <div class="u-container-layout u-valign-top u-container-layout-1">
-                <p class="u-text u-text-2"
-                data-en="These are tags for denoting Parts Of Speech of a word. They can be found on the search result page in the corresponding block or in a tooltip when you hover over the words you are interested in in the examples on the same page."
-                data-ru="Ниже приведены частеречные обозначения (pos tags). Их можно увидеть на странице результата поиска в соответствующем блоке или в всплывающей подсказке при наведении курсора на интересующее вас слово в найденных примерах на той же странице."
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Mathematicon</title>
+     <link rel="shortcut icon" href="static/images/favicon.ico"/>
+    <meta property="og:title" content="Help - math" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8" />
+    <meta property="twitter:card" content="summary_large_image" />
+
+    <style data-tag="reset-style-sheet">
+      html {  line-height: 1.15;}body {  margin: 0;}* {  box-sizing: border-box;  border-width: 0;  border-style: solid;}p,li,ul,pre,div,h1,h2,h3,h4,h5,h6,figure,blockquote,figcaption {  margin: 0;  padding: 0;}button {  background-color: transparent;}button,input,optgroup,select,textarea {  font-family: inherit;  font-size: 100%;  line-height: 1.15;  margin: 0;}button,select {  text-transform: none;}button,[type="button"],[type="reset"],[type="submit"] {  -webkit-appearance: button;}button::-moz-focus-inner,[type="button"]::-moz-focus-inner,[type="reset"]::-moz-focus-inner,[type="submit"]::-moz-focus-inner {  border-style: none;  padding: 0;}button:-moz-focus,[type="button"]:-moz-focus,[type="reset"]:-moz-focus,[type="submit"]:-moz-focus {  outline: 1px dotted ButtonText;}a {  color: inherit;  text-decoration: inherit;}input {  padding: 2px 4px;}img {  display: block;}html { scroll-behavior: smooth  }
+    </style>
+    <style data-tag="default-style-sheet">
+      html {
+        font-family: Inter;
+        font-size: 16px;
+      }
+
+      body {
+        font-weight: 400;
+        font-style:normal;
+        text-decoration: none;
+        text-transform: none;
+        letter-spacing: normal;
+        line-height: 1.15;
+        color: var(--dl-color-gray-black);
+        background-color: var(--dl-color-site-lightbcg);
+
+      }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&amp;display=swap"
+      data-tag="font"
+    />
+
+  </head>
+  <body>
+    <link rel="stylesheet" href="static/css/style.css" />
+    <div>
+      <link href="static/css/help.css" rel="stylesheet" />
+
+      <div class="help-container">
+        <div
+          class="navbar-interactive-container navbar-interactive-root-class-name"
+        >
+          <header
+            data-thq="thq-navbar"
+            class="navbar-interactive-navbar-interactive"
+          >
+            <img
+              alt="logo"
+              src="static/images/logo.svg"
+              class="navbar-interactive-logo"
+            />
+            <div
+              data-thq="thq-navbar-nav"
+              class="navbar-interactive-desktop-menu"
+            >
+              <nav class="navbar-interactive-links">
+                <a class="nav-links first-link" href="/main_{{main_lan}}"><span data-ru="Главная" data-en="Main"></span></a>
+                <a class="nav-links" href="/dictionary_{{main_lan}}"><span data-ru="Словарь" data-en="Dictionary"></span></a>
+                <a class="navbar-interactive-text02 nav-links" href="/check_{{main_lan}}">
+                  <span data-ru="Тесты" data-en="Check knowledge"></span>
+                </a>
+                <a class="navbar-interactive-text03 nav-links" href="#">
+                  <span data-ru="Личный кабинет" data-en="Account"></span>
+                  <br />
+                </a>
+                <a class="navbar-interactive-text06 nav-links" href="/help_{{main_lan}}">
+                  <span data-ru="Помощь" data-en="Help"></span>
+                  <br />
+                </a>
+              </nav>
+              <div class="navbar-interactive-container1">
+                <a class="button nav-btn" href="/login_{{main_lan}}"><span data-ru="Войти" data-en="Sign in"></span></a>
+                <a class="navbar-interactive-register button nav-btn" href="/register_{{main_lan}}">
+                  <span data-ru="Регистрация" data-en="Register"></span>
+                </a>
+              </div>
+            </div>
+            <div
+              data-thq="thq-burger-menu"
+              class="navbar-interactive-burger-menu"
+            >
+              <svg viewBox="0 0 1024 1024" class="navbar-interactive-icon">
+                <path
+                  d="M128 554.667h768c23.552 0 42.667-19.115 42.667-42.667s-19.115-42.667-42.667-42.667h-768c-23.552 0-42.667 19.115-42.667 42.667s19.115 42.667 42.667 42.667zM128 298.667h768c23.552 0 42.667-19.115 42.667-42.667s-19.115-42.667-42.667-42.667h-768c-23.552 0-42.667 19.115-42.667 42.667s19.115 42.667 42.667 42.667zM128 810.667h768c23.552 0 42.667-19.115 42.667-42.667s-19.115-42.667-42.667-42.667h-768c-23.552 0-42.667 19.115-42.667 42.667s19.115 42.667 42.667 42.667z"
+                ></path>
+              </svg>
+            </div>
+            <div
+              data-thq="thq-mobile-menu"
+              class="navbar-interactive-mobile-menu"
+            >
+              <div class="navbar-interactive-nav">
+                <div
+                  data-thq="thq-close-menu"
+                  class="navbar-interactive-close-menu"
                 >
-                <div class="u-border-3 u-border-custom-color-1 u-line u-line-horizontal u-line-1"></div>
-                <div class="u-table u-table-responsive u-table-1">
-                  <table class="u-table-entity">
-                    <colgroup>
-                      <col width="20%">
-                      <col width="80%">
-                    </colgroup>
-                    <tbody class="u-table-body u-table-body-1">
-                    {% for POS in POS_tags %}
-                      <tr style="height: 26px;">
-                        <td class="u-table-cell" data-ru="{{ POS[0] }}" data-en="{{ POS[0] }}" >{{tag}}</td>
-                        <td class="u-table-cell">
-                            <a href="https://universaldependencies.org/{{ POS[4] }}" target="_blank" data-ru="{{ POS[1] }}" data-en="{{ POS[2] }}"></a> (<text data-ru="{{ POS[3] }}" data-en="{{ POS[3] }}"></text>)
-                        </td>
-                      </tr>
-                    {%endfor%}
-                    </tbody>
-                  </table>
+                  <h3 class="navbar-interactive-text09"><span data-ru="Меню" data-en="Menu"></span></h3>
+                  <svg viewBox="0 0 1024 1024" class="navbar-interactive-icon2">
+                    <path
+                      d="M810 274l-238 238 238 238-60 60-238-238-238 238-60-60 238-238-238-238 60-60 238 238 238-238z"
+                    ></path>
+                  </svg>
+                </div>
+                <nav class="navbar-interactive-links1">
+                  <span class="navbar-interactive-text10">
+                    <a href="/main_{{main_lan}}" data-ru="Главная" data-en="Main"></a>
+                  </span>
+                  <span class="navbar-interactive-text11">
+                    <a href="/dictionary_{{main_lan}}" data-ru="Словарь" data-en="Dictionary"></a>
+                  </span>
+                  <span class="navbar-interactive-text12">
+                    <a  href="/check_{{main_lan}}" data-ru="Тесты" data-en="Check knowledge"></a>
+                  </span>
+                  <span class="navbar-interactive-text13" >
+                    <a  data-ru="Личный кабинет" data-en="Account"></a>
+                  </span>
+                  <span class="navbar-interactive-text14">
+                    <a href="/help_{{main_lan}}" data-ru="Помощь" data-en="Help"></a>
+                  </span>
+                </nav>
+                <div class="navbar-interactive-buttons">
+                  <a href="/login_{{main_lan}}" class="navbar-interactive-login1 button">
+                    <span data-ru="Войти" data-en="Sign in"></span>
+                  </a>
+                  <a class="navbar-interactive-register1 button" href="/register_{{main_lan}}">
+                    <span data-ru="Регистрация" data-en="Register"></span>
+                  </a>
                 </div>
               </div>
             </div>
-          </div>
-          <div class="u-accordion-item u-accordion-item-2">
-            <a class="u-accordion-link u-active-custom-color-2 u-button-style u-grey-5 u-radius-8 u-text-active-white u-text-grey-60 u-text-hover-black u-accordion-link-2" id="link-1a5c" aria-controls="1a5c" aria-selected="false">
-              <span class="u-accordion-link-text" data-ru="Что такое 'модель' на странице результата поиска?" data-en="What are models in the result page?"></span><span class="u-accordion-link-icon u-icon u-text-grey-40 u-icon-2"><svg class="u-svg-link" preserveAspectRatio="xMidYMin slice" viewBox="0 0 16 16" style=""><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#svg-ec8e"></use></svg><svg class="u-svg-content" viewBox="0 0 16 16" x="0px" y="0px" id="svg-ec8e"><path d="M8,10.7L1.6,5.3c-0.4-0.4-1-0.4-1.3,0c-0.4,0.4-0.4,0.9,0,1.3l7.2,6.1c0.1,0.1,0.4,0.2,0.6,0.2s0.4-0.1,0.6-0.2l7.1-6	c0.4-0.4,0.4-0.9,0-1.3c-0.4-0.4-1-0.4-1.3,0L8,10.7z"></path></svg></span>
-            </a>
-            <div class="u-accordion-pane u-container-style u-white u-accordion-pane-2" id="1a5c" aria-labelledby="link-1a5c">
-              <div class="u-container-layout u-container-layout-2">
-                <img class="u-image u-image-default u-preserve-proportions u-image-1" src="static/images/image.png" alt="" data-image-width="188" data-image-height="229">
-                <p class="u-text u-text-3"
-                   data-en='"Model" - control model in the required structure. You can see the model of a word in a construct if you hover over a word of interest.'
-                   data-ru="'Модель' - модель управления в конструкции. Ее можно увидеть, если вы наведете на интересующее вас слово."
-                ></p>
-              </div>
+            <div class="navbar-interactive-languages">
+              <button class="navbar-interactive-ru button switchlang" data-lang="ru">
+                <span>RU</span>
+              </button>
+              <button class="navbar-interactive-eng button switchlang" data-lang="en">
+                <span>ENG</span>
+              </button>
             </div>
-          </div>
-          <div class="u-accordion-item u-accordion-item-3">
-            <a class="u-accordion-link u-active-custom-color-2 u-button-style u-grey-5 u-radius-8 u-text-active-white u-text-grey-60 u-text-hover-black u-accordion-link-3" id="link-accordion-4c47" aria-controls="accordion-4c47" aria-selected="false">
-              <span class="u-accordion-link-text" data-ru="Для чего тесты?" data-en="what are the tests for?"></span><span class="u-accordion-link-icon u-icon u-text-grey-40 u-icon-3"><svg class="u-svg-link" preserveAspectRatio="xMidYMin slice" viewBox="0 0 512 512" style=""><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#svg-55f1"></use></svg><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" xml:space="preserve" class="u-svg-content" viewBox="0 0 512 512" x="0px" y="0px" id="svg-55f1" style="enable-background:new 0 0 512 512;"><g><g><path d="M509.121,125.966c-3.838-3.838-10.055-3.838-13.893,0L256.005,365.194L16.771,125.966c-3.838-3.838-10.055-3.838-13.893,0    c-3.838,3.838-3.838,10.055,0,13.893l246.18,246.175c1.842,1.842,4.337,2.878,6.947,2.878c2.61,0,5.104-1.036,6.946-2.878    l246.17-246.175C512.959,136.021,512.959,129.804,509.121,125.966z"></path></g>
-</g></svg></span>
-            </a>
-            <div class="u-accordion-pane u-container-style u-white u-accordion-pane-3" id="accordion-4c47" aria-labelledby="link-accordion-4c47">
-              <div class="u-container-layout u-valign-top u-container-layout-3">
-                <ul class="u-text u-text-4">
-                  <li data-en="The tests in the 'Check knowledge' section are selected in accordance with the analyzed functions and phrases. You can choose the section in which you want to test your understanding and take the test. In the test, you will need to translate the highlighted construction into English or choose from the provided answer options."
-                      data-ru="Тесты подобраны в соответствии с проанализированными функциями и словосочетаниями. Вы можете выбрать раздел, в котором хотите проверить свое понимание, и пройти тест. В тесте Вам нужно будет перевести выделенную конструкцию на английский или выбрать из представленных вариантов ответа."><br>
-                    <br>
-                  </li>
-                  <li data-en="If you are a registered user, in your personal account you will be able to select tests for the understanding of the structures that you were looking for, such tests will be generated automatically."
-                      data-ru="Если вы зарегистрированный пользователь, в вашем личном аккаунте вы сможете выбрать тесты на понимание конструкций, которые вы искали, такие тесты будут генерироваться автоматически."></li>
-                </ul>
-              </div>
-            </div>
-          </div>
-          <div class="u-accordion-item u-accordion-item-4">
-            <a class="u-accordion-link u-active-custom-color-2 u-button-style u-grey-5 u-radius-8 u-text-active-white u-text-grey-60 u-text-hover-black u-accordion-link-4" id="link-accordion-a910" aria-controls="accordion-a910" aria-selected="false">
-              <span class="u-accordion-link-text" data-ru="Контакты" data-en="Contacts"><span class="u-accordion-link-icon u-icon u-text-grey-40 u-icon-4"><svg class="u-svg-link" preserveAspectRatio="xMidYMin slice" viewBox="0 0 512 512" style=""><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#svg-6813"></use></svg><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" xml:space="preserve" class="u-svg-content" viewBox="0 0 512 512" x="0px" y="0px" id="svg-6813" style="enable-background:new 0 0 512 512;"><g><g><path d="M509.121,125.966c-3.838-3.838-10.055-3.838-13.893,0L256.005,365.194L16.771,125.966c-3.838-3.838-10.055-3.838-13.893,0    c-3.838,3.838-3.838,10.055,0,13.893l246.18,246.175c1.842,1.842,4.337,2.878,6.947,2.878c2.61,0,5.104-1.036,6.946-2.878    l246.17-246.175C512.959,136.021,512.959,129.804,509.121,125.966z"></path>
-</g>
-</g></svg></span>
-            </a>
-            <div class="u-accordion-pane u-container-style u-white u-accordion-pane-4" id="accordion-a910" aria-labelledby="link-accordion-a910">
-              <div class="u-container-layout u-container-layout-4">
-                <p class="u-text u-text-5"> If you have technical problems or think that some section needs to be improved and / or corrected, our contacts:<br>
-                  <br>email: {{example_email}}<br>or<br>tg: {{example_tg_account}}
-                </p>
-              </div>
-            </div>
-          </div>
+          </header>
         </div>
+        <h1 class="help-text" data-ru="Вопросы и ответы" data-en="Questions & Answers"></h1>
+        <div class="help-fq">
+          <span class="question"
+          data-ru="❍&nbsp; &nbsp; &nbsp;Какие частеречные обозначения мы используем?"
+          data-en="❍&nbsp; &nbsp; &nbsp;What pos tags do we use?">
+          </span>
+          <div class="help-a1">
+            <span class="help-a"
+              data-ru="Ниже приведены частеречные обозначения (pos tags). Их можно увидеть
+                    на странице результата поиска в соответствующем блоке или в всплывающей подсказке
+                    при наведении курсора на интересующее вас слово в найденных примерах на той же странице."
+              data-en="These are tags for denoting Parts Of Speech of a word. They can be found on the search
+              result page in the corresponding block or in a tooltip when you hover over the words you are
+              interested in in the examples on the same page.">
+            </span>
+            <div class="help-pos-table">
+              <div class="help-pos">
+                {% for POS in POS_tags %}
+                <span class="POSstring"data-ru="{{ POS[0] }}" data-en="{{ POS[0] }}" >{{tag}}</span>
+               {%endfor%}
+              </div>
+              <div class="help-meaning">
+                {% for POS in POS_tags %}
+                <span class="POSstring help-text07">
+                  <a href="https://universaldependencies.org/{{ POS[4] }}" target="_blank" data-ru="{{ POS[1] }}" data-en="{{ POS[2] }}" style="color: royalblue; text-decoration: underline;"></a> (<text data-ru="{{ POS[3] }}" data-en="{{ POS[3] }}"></text>)
+                </span>
+                {%endfor%}
+              </div>
+            </div>
+          </div>
+          <span class="help-q2 question"
+              data-ru="❍&nbsp; &nbsp; &nbsp;Что такое 'модель' на странице результата поиска?"
+              data-en="❍&nbsp; &nbsp; What are models in the result page?">
+          </span>
+          <span>
+            <span class="help-a"
+            data-ru='"Модель" - модель управления в конструкции. Ее можно увидеть, если вы наведете
+            на интересующее вас слово.'
+            data-en='"Model" - control model in the required structure. You can see the
+              model of a word in a construct if you hover over a word of
+              interest.'>
+            </span>
+            <br />
+          </span>
+          <span class="help-q3 question"
+          data-ru="❍&nbsp; &nbsp; Контакты"
+          data-en="❍&nbsp; &nbsp; Contacts">
+          </span>
+          <span class="help-a4">
+            <span class="help-a"
+            data-ru="Если у вас возникли технические проблемы или вы считаете, что некоторые разделы нуждаются
+            в доработке, наши контактные данные:"
+            data-en="If you have technical problems or think that some sections need to
+              be improved and / or corrected, contact us:">
+            </span>
+            <br class="help-text15" />
+            <br />
+            <span class="help-a"
+                  data-ru="почта: {{example_email}}"
+                  data-en="email: {{example_email}}">
+            </span>
+            <br>
+            <span class="help-a"
+                  data-ru="телеграм: {{example_tg_account}}"
+                  data-en="telegram: {{example_tg_account}}">
+            </span>
+          </span>
+        </div>
+        <footer class="footer-footer">
+          <span class="footer-text">
+            <span data-ru="Математикон, 2020-20xx." data-en="Mathematicon, 2020-20xx."></span>
+            <br />
+            <span data-ru="Национальный исследовательский университет «Высшая школа экономики»" data-en="National Research University Higher School of Economics"></span>
+          </span>
+          <div class="footer-icon-group">
+            <svg viewBox="0 0 950.8571428571428 1024" class="footer-icon">
+              <path
+                d="M925.714 233.143c-25.143 36.571-56.571 69.143-92.571 95.429 0.571 8 0.571 16 0.571 24 0 244-185.714 525.143-525.143 525.143-104.571 0-201.714-30.286-283.429-82.857 14.857 1.714 29.143 2.286 44.571 2.286 86.286 0 165.714-29.143 229.143-78.857-81.143-1.714-149.143-54.857-172.571-128 11.429 1.714 22.857 2.857 34.857 2.857 16.571 0 33.143-2.286 48.571-6.286-84.571-17.143-148-91.429-148-181.143v-2.286c24.571 13.714 53.143 22.286 83.429 23.429-49.714-33.143-82.286-89.714-82.286-153.714 0-34.286 9.143-65.714 25.143-93.143 90.857 112 227.429 185.143 380.571 193.143-2.857-13.714-4.571-28-4.571-42.286 0-101.714 82.286-184.571 184.571-184.571 53.143 0 101.143 22.286 134.857 58.286 41.714-8 81.714-23.429 117.143-44.571-13.714 42.857-42.857 78.857-81.143 101.714 37.143-4 73.143-14.286 106.286-28.571z"
+              ></path></svg
+            ><svg viewBox="0 0 877.7142857142857 1024" class="footer-icon2">
+              <path
+                d="M585.143 512c0-80.571-65.714-146.286-146.286-146.286s-146.286 65.714-146.286 146.286 65.714 146.286 146.286 146.286 146.286-65.714 146.286-146.286zM664 512c0 124.571-100.571 225.143-225.143 225.143s-225.143-100.571-225.143-225.143 100.571-225.143 225.143-225.143 225.143 100.571 225.143 225.143zM725.714 277.714c0 29.143-23.429 52.571-52.571 52.571s-52.571-23.429-52.571-52.571 23.429-52.571 52.571-52.571 52.571 23.429 52.571 52.571zM438.857 152c-64 0-201.143-5.143-258.857 17.714-20 8-34.857 17.714-50.286 33.143s-25.143 30.286-33.143 50.286c-22.857 57.714-17.714 194.857-17.714 258.857s-5.143 201.143 17.714 258.857c8 20 17.714 34.857 33.143 50.286s30.286 25.143 50.286 33.143c57.714 22.857 194.857 17.714 258.857 17.714s201.143 5.143 258.857-17.714c20-8 34.857-17.714 50.286-33.143s25.143-30.286 33.143-50.286c22.857-57.714 17.714-194.857 17.714-258.857s5.143-201.143-17.714-258.857c-8-20-17.714-34.857-33.143-50.286s-30.286-25.143-50.286-33.143c-57.714-22.857-194.857-17.714-258.857-17.714zM877.714 512c0 60.571 0.571 120.571-2.857 181.143-3.429 70.286-19.429 132.571-70.857 184s-113.714 67.429-184 70.857c-60.571 3.429-120.571 2.857-181.143 2.857s-120.571 0.571-181.143-2.857c-70.286-3.429-132.571-19.429-184-70.857s-67.429-113.714-70.857-184c-3.429-60.571-2.857-120.571-2.857-181.143s-0.571-120.571 2.857-181.143c3.429-70.286 19.429-132.571 70.857-184s113.714-67.429 184-70.857c60.571-3.429 120.571-2.857 181.143-2.857s120.571-0.571 181.143 2.857c70.286 3.429 132.571 19.429 184 70.857s67.429 113.714 70.857 184c3.429 60.571 2.857 120.571 2.857 181.143z"
+              ></path></svg
+            ><svg viewBox="0 0 602.2582857142856 1024" class="footer-icon4">
+              <path
+                d="M548 6.857v150.857h-89.714c-70.286 0-83.429 33.714-83.429 82.286v108h167.429l-22.286 169.143h-145.143v433.714h-174.857v-433.714h-145.714v-169.143h145.714v-124.571c0-144.571 88.571-223.429 217.714-223.429 61.714 0 114.857 4.571 130.286 6.857z"
+              ></path>
+            </svg>
+          </div>
+        </footer>
       </div>
-    </section>
+    </div>
 
-{% endblock %}
+    <script
+      defer=""
+      src="https://unpkg.com/@teleporthq/teleport-custom-scripts"
+    ></script>
+
+  <script>
+function switchLang(lang)
+{
+    $("[data-" + lang + "]").text(function(i, e) {
+        return $(this).data(lang);
+    });
+}
+
+switchLang("{{main_lan}}");
+
+$(".switchlang").click(function() {
+    switchLang($(this).data("lang"));
+    var lang = $(this).data("lang");
+    window.location = window.location.href.replace(/_[A-Za-z][A-Za-z]/i, "_" + lang);
+
+});
+</script>
+  </body>
+</html>
