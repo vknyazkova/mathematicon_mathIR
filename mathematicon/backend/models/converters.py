@@ -8,8 +8,8 @@ from yaml.parser import ParserError
 from spacy import Language
 from spacy_conll.parser import ConllParser
 
-from database import TextDBHandler
-from custom_dataclasses import DatabaseText
+from .database import TextDBHandler
+from .custom_dataclasses import DatabaseText
 
 
 class YamlConverter:
@@ -17,17 +17,16 @@ class YamlConverter:
                  filepaths: Iterable[Union[str, os.PathLike]],
                  text_preprocess: Callable[[str], str] = None):
         if not text_preprocess:
-            text_preprocess = self.remove_double_spaces
-        self.yaml_contents = self.load_yamls(filepaths, text_preprocess)
-        self.parsed_docs = None
+            text_preprocess = self._remove_double_spaces
+        self.yaml_contents = self._load_yamls(filepaths, text_preprocess)
 
     @staticmethod
-    def remove_double_spaces(text: str) -> str:
+    def _remove_double_spaces(text: str) -> str:
         return re.sub(r"\s+", " ", text)
 
     @staticmethod
-    def load_yamls(filepaths: Iterable[str, os.PathLike],
-                   preprocess: Callable[[str], str]) -> Dict[Path, Dict[str, Any]]:
+    def _load_yamls(filepaths: Iterable[Union[str, os.PathLike]],
+                    preprocess: Callable[[str], str]) -> Dict[Path, Dict[str, Any]]:
         """
         Read texts that are stored in yaml files
         Args:
