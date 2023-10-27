@@ -267,5 +267,4 @@ class WebDBHandler(DBHandler):
         cur.row_factory = self.dict_factory
         return cur.fetchall()
 
-    def 
 
