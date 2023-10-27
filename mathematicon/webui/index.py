@@ -21,10 +21,12 @@ def result(lang):
     if request.form['type'] == "By text":
         user_request = request.form["query"]
         query_info, sents_info = text_search.search(user_request)
-
-        ex_sent = sents_info[0]
-        sentence_string = ''.join([t.text for t in ex_sent.tokens])
-        print(sentence_string)
+        '''
+        if sents_info != []:
+            ex_sent = sents_info[0]
+            sentence_string = ''.join([t.text for t in ex_sent.tokens])
+            print(sentence_string)
+        '''
     else:
         user_request = "вы ввели формулу"
     return render_template('result.html', main_lan=lang, query_info=query_info, sents_info=sents_info)
