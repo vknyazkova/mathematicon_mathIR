@@ -1,4 +1,3 @@
-from pathlib import Path
 from sqlite3 import IntegrityError
 
 from flask import redirect, url_for, flash, request, render_template
@@ -7,9 +6,7 @@ from flask_login import LoginManager, login_required, login_user, logout_user, c
 from .app import app
 from .user import User
 from ..backend.models.database import UserDBHandler
-from ..config import DATA_PATH, DB_NAME
-
-DB_PATH = Path(DATA_PATH, DB_NAME)
+from .. import DB_PATH
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -48,3 +45,23 @@ def reg_page(lang):
             return redirect(url_for('reg_page', lang=lang))
     return render_template('register.html', main_lan=lang)
 
+
+@app.route('/login_<lang>', methods=['GET', 'POST'])
+def login(lang):
+    if request.method == 'POST':
+        un = request.form['username']
+        user = User(DB_PATH).get(un)
+        if user:
+            if user.validate_password(request.form['password']):
+                login_user(user, remember=True)
+                flash(f'You\'ve been successfully logged-in')
+                return redirect(url_for('account', lang=lang))
+    return render_template('login.html', main_lan=lang)
+
+
+@app.route('/account_<lang>', methods=['POST', 'GET'])
+def account(lang):
+    if not current_user.is_authenticated:
+        return redirect(url_for('login', lang=lang))
+    else:
+        return render_template('account.html', main_lan=lang, login=current_user.username, email=current_user.email)

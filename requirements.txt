@@ -1,4 +1,5 @@
 flask>=3.0.0
+Werkzeug==2.3.0
 spacy
 PyYAML>=6.0.1
 ru-core-news-sm @ https://github.com/explosion/spacy-models/releases/download/ru_core_news_sm-3.5.0/ru_core_news_sm-3.5.0-py3-none-any.whl

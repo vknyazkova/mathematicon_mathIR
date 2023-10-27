@@ -255,7 +255,7 @@ class WebDBHandler(DBHandler):
     def sent_token_info(self,
                         sent_id: int) -> List[dict]:
         cur = self.conn.execute('''
-        SELECT tokens.token, tokens.whitespace, pos.name AS 'pos', lemmas.name AS 'lemma'
+        SELECT tokens.token, tokens.whitespace, pos.name AS 'pos', lemmas.name AS 'lemma', tokens.char_start, tokens.char_end
         FROM tokens
         LEFT JOIN lemmas
         ON lemmas.id = tokens.lemma_id
@@ -266,4 +266,6 @@ class WebDBHandler(DBHandler):
         ''', (sent_id,))
         cur.row_factory = self.dict_factory
         return cur.fetchall()
+
+    def 
 

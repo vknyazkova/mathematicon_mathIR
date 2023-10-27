@@ -14,8 +14,6 @@ class TextSearch:
         self.db = db
         self.nlp = nlp
 
-        ...
-
     def create_query_info(self,
                           query: str) -> QueryInfo:
         query_info = QueryInfo()
@@ -49,7 +47,8 @@ class TextSearch:
         return matching_sents
 
     def create_html_sentences(self,
-                              selected_sents):
+                              query_info: QueryInfo,
+                              selected_sents) -> Iterable[HTMLsentence]:
         html_sentences = []
         for sent_id, match in selected_sents:
             html_sentence = HTMLsentence()
@@ -61,9 +60,25 @@ class TextSearch:
 
             tokens = self.db.sent_token_info(sent_id)
             for t in self.html_tokens_generator(tokens):
-                print(t)
+                if isinstance(t, HTMLWord):
+                    t.color = self.color_result_word(query_info, t, match)
+                html_sentence.tokens.append(t)
+            html_sentences.append(html_sentence)
+        return html_sentences
 
-        ...
+    def color_result_word(self,
+                          query_info: QueryInfo,
+                          token_info: HTMLWord,
+                          sentence_match_spans: Iterable[Tuple[int, int]]):
+        query_lemmas = [t.lemma for t in query_info.tokens]
+        try:
+            token_idx_in_query = query_lemmas.index(token_info.lemma)
+            for span in sentence_match_spans:
+                if token_info.char_start_ >= span[0] and token_info.char_end_ <= span[1]:
+                    return query_info.tokens[token_idx_in_query].color
+            return 'black'
+        except ValueError:
+            return 'black'
 
 
     def html_tokens_generator(self,
@@ -76,7 +91,9 @@ class TextSearch:
                     plain_token = HTMLSpan('')
                 yield HTMLWord(text=token['token'],
                                pos=token['pos'],
-                               lemma=token['lemma'])
+                               lemma=token['lemma'],
+                               char_start_=token['char_start'],
+                               char_end_=token['char_end'])
             else:
                 plain_token.text += token['token']
             whitespace = ' ' if token['whitespace'] else ''
@@ -91,9 +108,9 @@ class TextSearch:
         return video_link
 
     def search(self,
-               query: str) -> HTMLsentence:
+               query: str) -> Tuple[QueryInfo, Iterable[HTMLsentence]]:
         query_info = self.create_query_info(query)
         matching_sents = self.select_sentences([t.lemma for t in query_info.tokens])
-        self.create_html_sentences(matching_sents)
-        ...
+        results = self.create_html_sentences(query_info, matching_sents)
+        return query_info, results
 

@@ -15,6 +15,8 @@ class HTMLWord(HTMLSpan):
     html_type: str = 'tooltip'
     pos: str = None
     lemma: str = None
+    char_start_: int = None
+    char_end_: int = None
 
 
 @dataclass
@@ -29,8 +31,6 @@ class HTMLsentence:
 @dataclass
 class QueryInfo:
     tokens: List[HTMLWord] = field(default_factory=list)
-    # poses: List[str] = field(default_factory=list)
-    # lemmas: List[str] = field(default_factory=list)
     formula: List[str] = None
 
 
@@ -130,6 +130,7 @@ class DatabaseSentence:
                                   char_end=char_end + 1,
                                   filename=self.filename,
                                   sent_pos_in_text=self.pos_in_text)
+            print(self.sent_text[char_cur: char_end])
             yield vars(token)
             char_cur = char_end + len(t.whitespace_)
 

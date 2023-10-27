@@ -1,6 +1,6 @@
 from hashlib import pbkdf2_hmac
 import os
-from typing import Union, Tuple, Self
+from typing import Union, Tuple
 
 import flask_login
 
@@ -53,7 +53,7 @@ class User(flask_login.UserMixin, UserDBHandler):
             return False
 
     def get(self,
-            username: str) -> Union[None, Self]:
+            username: str):
         res = self.get_user_by_uname(username)
         if res:
             for key in res:
