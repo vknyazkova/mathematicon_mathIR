@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% block content %}
+<link rel="stylesheet" href="static/css/result.css" media="screen">
+    <section class="u-clearfix u-custom-color-1 u-section-1" id="sec-a27d">
+        <div class="u-clearfix u-sheet u-sheet-1">
+            <div class="u-clearfix u-expanded-width u-layout-wrap u-layout-wrap-1">
+                <div class="u-layout">
+                    <div class="u-layout-col">
+                        <div class="u-size-30">
+                            <div class="u-layout-row">
+                                <div class="u-container-style u-layout-cell u-size-60 u-layout-cell-1">
+                                    <div class="u-container-layout u-container-layout-1">
+                                        <h1 class="u-text u-text-default u-text-1" data-en="Search:" data-ru="Поиск:"></h1>
+                                        <h3 class="u-text u-text-default u-text-2">
+                                          {% for word in query_info.tokens %}
+                                            <abbr class="tooltip tooltip--right {{word.color}}" data-tooltip="Model: {{word.model}}">{{word.token}} </abbr>
+                                          {%endfor%}
+                                           <a class="u-border-none u-btn u-button-link u-button-style u-none u-text-active-custom-color-5 u-text-hover-custom-color-6 u-text-palette-3-base u-btn-2" onclick="makeSound()"><img src="static/images/speaker.png" width="auto" height="20px"></a>
+                                        </h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="u-size-30">
+                            <div class="u-layout-row">
+                                <div class="u-container-align-center u-container-style u-layout-cell u-size-14 u-layout-cell-2">
+                                    <div class="u-container-layout u-container-layout-2">
+                                        <h5 class="u-align-center u-text u-text-default u-text-3" data-ru="Формула:" data-en="Formula:"></h5>
+                                        {% for pic in query_info.pictures %}
+                                            <img class="u-image u-image-default u-preserve-proportions u-image-1" src="static/pics/{{ pic }}" alt="" data-image-width="64" data-image-height="84">
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <!--
+                                <div class="u-container-style u-layout-cell u-size-46 u-layout-cell-3">
+                                    <div class="u-container-layout u-container-layout-3">
+                                        <h5 class="u-text u-text-default u-text-4" data-ru="Начальные формы:" data-en="Normal forms:"></h5>
+                                        <p class="u-text u-text-default u-text-5">{{ query_info.lemmatized }}</p>
+                                    </div>
+                                </div>
+                                 -->
+                                <div class="u-container-style u-layout-cell u-size-46 u-layout-cell-3">
+                    <div class="u-container-layout u-container-layout-3">
+                      <div class="u-expanded-width u-table u-table-responsive u-table-1">
+                        <table class="u-table-entity">
+                          <colgroup>
+                            <col width="auto">
+                            <col width="auto">
+                            <col width="auto">
+                          </colgroup>
+                          <tbody class="u-table-body u-table-body-1">
+                            <tr style="height: 68px;">
+                              <td class="u-border-1 u-border-custom-color-2 u-border-no-left u-border-no-right u-table-cell u-table-cell-1" style="font-weight: 500;" data-en="Normal forms:" data-ru="Начальные формы:"></td>
+                                {% for word in query_info.tokens %}
+                                <td class="u-border-1 u-border-custom-color-2 u-border-no-left u-border-no-right u-table-cell u-table-cell-2" style="font-size: 1rem;">{{word.lemma}}</td>
+                              {%endfor%}
+                            </tr>
+                            <tr style="height: 68px;">
+                              <td class="u-border-1 u-border-custom-color-2 u-border-no-left u-border-no-right u-table-cell u-table-cell-4" style="font-weight: 500;" data-en="POS" data-ru="Часть речи"></td>
+                                {% for word in query_info.tokens %}
+                                <td class="u-border-1 u-border-custom-color-2 u-border-no-left u-border-no-right u-table-cell u-table-cell-5" style="font-size: 1rem;">{{word.pos}}</td>
+                              {%endfor%}
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="u-clearfix u-custom-color-4 u-section-2" id="sec-242d">
+        <div class="u-clearfix u-sheet u-sheet-1">
+            <p class="u-text u-text-default u-text-1" data-en="Examples found: {{sents_info|length}}" data-ru="Примеров найдено: {{sents_info|length}}"></p>
+            <div class="u-expanded-width u-list u-list-1">
+                <div class="u-repeater u-repeater-1">
+                {% for ResultInfo in sents_info %}
+                    <div class="u-border-1 u-border-grey-15 u-container-style u-list-item u-radius-8 u-repeater-item u-shape-round u-white u-list-item-1">
+                        <div class="u-container-layout u-similar-container u-valign-top u-container-layout-1">
+                            <p class="u-text u-text-default u-text-2">
+                            {% for ResultTokenInfo in ResultInfo.tokens %}
+                            <abbr class="tooltip tooltip--top" data-tooltip="{{ResultTokenInfo.pos}}">
+                                <abbr class="tooltip tooltip--bottom {{ResultTokenInfo.color}}" data-tooltip="{{ResultTokenInfo.lemma}}">{{ResultTokenInfo.token}}</abbr>
+                            </abbr>
+                            {%endfor%}
+                            {% if ResultInfo.youtube_link %}
+                                <a href="{{ ResultInfo.youtube_link }}" target="_blank">
+                                    <img class="u-image u-image-default u-preserve-proportions u-image-1" src="static/images/yt.png" height="16px" width="20px">
+                                </a>
+                            {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                {%endfor%}
+                </div>
+            </div>
+        </div>
+    </section>
+<script type = "text/javascript">
+    function makeSound(){
+        if(window.speechSynthesis !== undefined){
+            console.log('Чтение речи поддерживается в данном браузере');
+        }else{
+            console.log('Чтение речи не поддерживается в данном браузере');
+        }
+        var synth = window.speechSynthesis,
+            message = new SpeechSynthesisUtterance();
+        message.lang = 'ru-RU';
+        message.pitch = 0.8;
+        message.text = '{{query}}';
+        synth.speak(message);
+        }
+    </script>
+{% endblock %}

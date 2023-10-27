@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block content %}
+<link rel="stylesheet" href="static/css/home.css" media="screen">
+    <section class="u-clearfix u-custom-color-1 u-section-1" id="sec-a55f">
+        <div class="u-clearfix u-sheet u-sheet-1">
+            <div class="u-container-style u-custom-color-4 u-group u-radius-8 u-shape-round u-group-1">
+                <div class="u-container-layout u-container-layout-1">
+                    <h3 class="u-align-center u-text u-text-1"
+                        data-ru="Ваш инструмент для поиска математических выражений."
+                        data-en="Your tool for finding mathematical formulas and expressions."><br>
+                    </h3>
+                    <div class="u-align-center u-form u-form-1">
+                        <form action="/result_{{main_lan}}" method="POST" class="u-clearfix u-form-custom-backend u-form-spacing-13 u-form-vertical u-inner-form"  name="form" style="padding: 10px;">
+                            <div class="u-form-group u-form-input-layout-horizontal u-form-radiobutton u-label-top u-form-group-1">
+                                <label class="u-label u-label-1" data-en="Choose the type of your search query:" data-ru="Выберите тип поиска:"></label>
+                                <div class="u-form-radio-button-wrapper">
+                                    <div class="u-input-row">
+                                        <input type="radio" id="radio1" name="type" value="By text" checked="checked" required="required">
+                                        <label class="u-label u-label-2" for="radio1" data-en="By text" data-ru="По словам"></label>
+                                    </div>
+                                    <div class="u-input-row">
+                                        <input type="radio" id="radio2" name="type" value="By formula" required="required">
+                                        <label class="u-label u-label-3" for="radio2" data-en="By formula" data-ru="По формуле"></label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="u-form-group u-form-name u-label-top">
+                                <label for="name-6904" class="u-form-control-hidden u-label u-label-4"></label>
+                                <input type="text" id="name-6904" name="query" class="u-border-1 u-border-grey-30 u-input u-input-rectangle u-radius-8 u-white" required="">
+                            </div>
+                            <div class="u-align-center u-form-group u-form-submit u-label-top">
+                                <input type="submit" value="submit" class="u-form-control-hidden">
+                                <button class="u-border-none u-btn u-btn-round u-btn-submit u-button-style u-custom-color-5 u-hover-custom-color-6 u-radius-8 u-btn-1" data-en="Search" data-ru="Поиск"></button>
+                            </div>
+                            <div class="u-form-send-message u-form-send-success"> Спасибо! Ваше сообщение отправлено. </div>
+                            <div class="u-form-send-error u-form-send-message"> Отправка не удалась. Пожалуйста, исправьте ошибки и попробуйте еще раз. </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="u-align-left u-clearfix u-custom-color-1 u-section-2" id="sec-618a">
+        <div class="u-clearfix u-sheet u-valign-middle u-sheet-1">
+            <div class="fr-view u-clearfix u-rich-text u-text u-text-1">
+                <h1 style="text-align: left;" data-ru="О корпусе" data-en="About corpus"></h1><br>
+                <p style="text-align: left;"><span style="line-height: 2.0;">Sample text. Click to select the text box. Click again or double click to start editing the text. Dictum non consectetur a erat nam at. Aliquam malesuada bibendum arcu vitae elementum curabitur vitae. Tellus mauris a diam maecenas sed enim ut sem. Ipsum faucibus vitae aliquet nec ullamcorper sit amet risus nullam. Pretium nibh ipsum consequat nisl vel pretium. In eu mi bibendum neque egestas congue. Vitae ultricies leo integer malesuada nunc. Nibh praesent tristique magna sit amet purus gravida. Diam volutpat commodo sed egestas. Gravida dictum fusce ut placerat orci nulla pellentesque.</span></p>
+            </div>
+        </div>
+    </section>
+{% endblock %}

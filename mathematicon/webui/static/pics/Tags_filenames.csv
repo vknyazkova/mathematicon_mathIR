@@ -1,0 +1,127 @@
+Tag,Expression,Filename
+min,минимум,min.png
+max,максимум,max.png
+tend,стремление; стремится к,tend.png
+lim,предел,lim.png
+determin,определитель; определитель системы,determin.png
+equivalent,эквивалент,equivalent.png
+expression,выражение,expression.png
+equation,уравнение,equation.png
+half,деление на 2; пополам,half.png
+plusminus,плюс минус,plusminus.png
+avg,среднее арифметическое,avg.png
+mean,медиана,mean1.png
+mean,медиана,mean2.png
+expected,математическое ожидание,expected.png
+dispersion,дисперсия,dispersion.png
+sum,сумма,sum.png
+LCM,НОК,LCM.png
+GCD,НОД,GCD.png
+let,назначение (=; let),let.png
+extract_mult,вынос общего множителя,extract_mult.png
+cancel_out,сократить,cancel_out.png
+sin,синус sin,sin.png
+cos,косинус cos,cos.png
+tan,тангенс tan; tg,tan.png
+ctg,котангенс ctan; ctg,ctg.png
+sec,секанс sec,sec.png
+cosec,косеканс cosec,cosec.png
+def_func,функция (буква),def_func.png
+derivative,производная (первая вторая.... n-ная) '; ''; '''...,derivative1.png
+derivative,производная (первая вторая.... n-ная) '; ''; '''...,derivative2.png
+derivative,производная (первая вторая.... n-ная) '; ''; '''...,derivative3.png
+integral,интеграл,integral.png
+little-o,о малое,little-o.png
+big-o,о большое,big-o.png
+factorial,факториал,factorial.png
+module,модуль,module.png
+not,отрицание,not.png
+add,сложение +,add.png
+sub,вычитание −,sub.png
+mult,умножение,mult.png
+div,деление,div.png
+power,степень ^,power.png
+root,корень,root.png
+intersection,пересечение,intersection.png
+union,объединение,union.png
+set_sub,разность множеств,set_sub.png
+delta,дельта,delta1.png
+delta,дельта,delta2.png
+exist,существование,exist.png
+nonexist,несуществование,nonexist.png
+any,любой,any.png
+equal,равенство,equal.png
+greater,больше,greater.png
+greaterequal,больше или равно (не меньше) ≥,greaterequal.png
+less,меньше ≤,less.png
+less_equal,меньше или равно (не больше) ≤,less_equal.png
+divisible,делимость ⋮,divisible2.png
+subset,подмножество,subset.png
+superset,надмножество,superset.png
+subsetequal,подмножество или совпадает,subsetequal.png
+supersetequal,надмножество или совпадает,supersetequal.png
+inequal,неравенство,inequal.png
+belongs,принадлежность,belongs.png
+nonbelong,непринадлежность,nonbelong.png
+even,четное,even.png
+odd,нечетное,odd.png
+interval,интервал (...) [] (] [) (),interval1.png
+interval,интервал (...) [] (] [) (),interval2.png
+interval,интервал (...) [] (] [) (),interval3.png
+interval,интервал (...) [] (] [) (),interval4.png
+set,множество {...},set1.png
+set,множество {...},set2.png
+set,множество {...},set3.png
+coeff,коеффициент,coeff.png
+vec,вектор,vec.png
+nat,натуральное,nat.png
+int,целое,int.png
+rational,рациональные,rational.png
+irrational,иррациональные?,irrational.png
+real,действительные,real.png
+inf,бесконечность,inf.png
+cons,константа,cons.png
+e,эпсилон,e.png
+numerator,числитель,numerator.png
+denominator,знаменатель,denominator.png
+item,слагаемое,item1.png
+item,слагаемое,item2.png
+multiplier,множитель,multiplier1.png
+multiplier,множитель,multiplier2.png
+equationroot,корень уравнения,equationroot.png
+var_any,переменная,var.png
+x,икс,x.png
+y,игрек,y.png
+n,эн,n.png
+b,бэ,b.png
+a,а,a.png
+number,число,number.png
+product,произведение,product.png
+difference,разность,difference.png
+reduced,уменьшаемое,reduced.png
+subtracted,вычитаемое,subtracted.png
+divider,делитель,divider.png
+divisible,делимое,divisible.png
+quotient,частное,quotient.png
+matrix,матрица,matrix.png
+index,индекс,index1.png
+index,индекс,index2.png
+stroke,штрих,stroke.png
+integer,целая часть,integer.png
+frac,дробная часть,frac.png
+comma,запятая,comma.png
+brackets,скобки,brackets1.png
+brackets,скобки,brackets2.png
+brackets,скобки,brackets3.png
+monomial,одночлен,monomial.png
+polynomial,многочлен,polynomial.png
+stolbik,столбик,stolbik.png
+stolbik,столбик,stolbik+.png
+stolbik,столбик,stolbik-.png
+line,числовая ось,line.png
+dash,черта,dash.png
+figure,цифра,figure.png
+abscissa,абсцисса ?,abscissa.png
+ordinate,ордината ?,ordinate.png
+fraction,дробь (.../...),fraction.png
+neg,отрицательное число,neg.png

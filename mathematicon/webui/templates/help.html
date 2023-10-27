@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block content %}
+<link rel="stylesheet" href="static/css/help.css" media="screen">
+<section class="u-align-center u-clearfix u-custom-color-1 u-section-1" id="sec-687a">
+      <div class="u-clearfix u-sheet u-sheet-1">
+        <h2 class="u-text u-text-default u-text-1" data-ru="Вопросы и факты" data-en="Facts &amp; Questions"></h2>
+          <div class="u-accordion u-collapsed-by-default u-spacing-13 u-accordion-1">
+          <div class="u-accordion-item">
+            <a class="u-accordion-link u-active-custom-color-2 u-button-style u-grey-5 u-radius-8 u-text-active-white u-text-grey-60 u-text-hover-black u-accordion-link-1" id="link-accordion-0781" aria-controls="accordion-0781" aria-selected="false">
+              <span class="u-accordion-link-text" data-ru="Какие частеречные обозначения мы используем?" data-en="What pos tags do we use?"></span><span class="u-accordion-link-icon u-icon u-text-grey-40 u-icon-1"><svg class="u-svg-link" preserveAspectRatio="xMidYMin slice" viewBox="0 0 512 512" style=""><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#svg-efcb"></use></svg><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" xml:space="preserve" class="u-svg-content" viewBox="0 0 512 512" x="0px" y="0px" id="svg-efcb" style="enable-background:new 0 0 512 512;"><g><g><path d="M509.121,125.966c-3.838-3.838-10.055-3.838-13.893,0L256.005,365.194L16.771,125.966c-3.838-3.838-10.055-3.838-13.893,0    c-3.838,3.838-3.838,10.055,0,13.893l246.18,246.175c1.842,1.842,4.337,2.878,6.947,2.878c2.61,0,5.104-1.036,6.946-2.878    l246.17-246.175C512.959,136.021,512.959,129.804,509.121,125.966z"></path></g>
+</g></svg></span>
+            </a>
+            <div class="u-accordion-pane u-container-style u-white u-accordion-pane-1" id="accordion-0781" aria-labelledby="link-accordion-0781">
+              <div class="u-container-layout u-valign-top u-container-layout-1">
+                <p class="u-text u-text-2"
+                data-en="These are tags for denoting Parts Of Speech of a word. They can be found on the search result page in the corresponding block or in a tooltip when you hover over the words you are interested in in the examples on the same page."
+                data-ru="Ниже приведены частеречные обозначения (pos tags). Их можно увидеть на странице результата поиска в соответствующем блоке или в всплывающей подсказке при наведении курсора на интересующее вас слово в найденных примерах на той же странице."
+                >
+                <div class="u-border-3 u-border-custom-color-1 u-line u-line-horizontal u-line-1"></div>
+                <div class="u-table u-table-responsive u-table-1">
+                  <table class="u-table-entity">
+                    <colgroup>
+                      <col width="20%">
+                      <col width="80%">
+                    </colgroup>
+                    <tbody class="u-table-body u-table-body-1">
+                    {% for POS in POS_tags %}
+                      <tr style="height: 26px;">
+                        <td class="u-table-cell" data-ru="{{ POS[0] }}" data-en="{{ POS[0] }}" >{{tag}}</td>
+                        <td class="u-table-cell">
+                            <a href="https://universaldependencies.org/{{ POS[4] }}" target="_blank" data-ru="{{ POS[1] }}" data-en="{{ POS[2] }}"></a> (<text data-ru="{{ POS[3] }}" data-en="{{ POS[3] }}"></text>)
+                        </td>
+                      </tr>
+                    {%endfor%}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="u-accordion-item u-accordion-item-2">
+            <a class="u-accordion-link u-active-custom-color-2 u-button-style u-grey-5 u-radius-8 u-text-active-white u-text-grey-60 u-text-hover-black u-accordion-link-2" id="link-1a5c" aria-controls="1a5c" aria-selected="false">
+              <span class="u-accordion-link-text" data-ru="Что такое 'модель' на странице результата поиска?" data-en="What are models in the result page?"></span><span class="u-accordion-link-icon u-icon u-text-grey-40 u-icon-2"><svg class="u-svg-link" preserveAspectRatio="xMidYMin slice" viewBox="0 0 16 16" style=""><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#svg-ec8e"></use></svg><svg class="u-svg-content" viewBox="0 0 16 16" x="0px" y="0px" id="svg-ec8e"><path d="M8,10.7L1.6,5.3c-0.4-0.4-1-0.4-1.3,0c-0.4,0.4-0.4,0.9,0,1.3l7.2,6.1c0.1,0.1,0.4,0.2,0.6,0.2s0.4-0.1,0.6-0.2l7.1-6	c0.4-0.4,0.4-0.9,0-1.3c-0.4-0.4-1-0.4-1.3,0L8,10.7z"></path></svg></span>
+            </a>
+            <div class="u-accordion-pane u-container-style u-white u-accordion-pane-2" id="1a5c" aria-labelledby="link-1a5c">
+              <div class="u-container-layout u-container-layout-2">
+                <img class="u-image u-image-default u-preserve-proportions u-image-1" src="static/images/image.png" alt="" data-image-width="188" data-image-height="229">
+                <p class="u-text u-text-3"
+                   data-en='"Model" - control model in the required structure. You can see the model of a word in a construct if you hover over a word of interest.'
+                   data-ru="'Модель' - модель управления в конструкции. Ее можно увидеть, если вы наведете на интересующее вас слово."
+                ></p>
+              </div>
+            </div>
+          </div>
+          <div class="u-accordion-item u-accordion-item-3">
+            <a class="u-accordion-link u-active-custom-color-2 u-button-style u-grey-5 u-radius-8 u-text-active-white u-text-grey-60 u-text-hover-black u-accordion-link-3" id="link-accordion-4c47" aria-controls="accordion-4c47" aria-selected="false">
+              <span class="u-accordion-link-text" data-ru="Для чего тесты?" data-en="what are the tests for?"></span><span class="u-accordion-link-icon u-icon u-text-grey-40 u-icon-3"><svg class="u-svg-link" preserveAspectRatio="xMidYMin slice" viewBox="0 0 512 512" style=""><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#svg-55f1"></use></svg><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" xml:space="preserve" class="u-svg-content" viewBox="0 0 512 512" x="0px" y="0px" id="svg-55f1" style="enable-background:new 0 0 512 512;"><g><g><path d="M509.121,125.966c-3.838-3.838-10.055-3.838-13.893,0L256.005,365.194L16.771,125.966c-3.838-3.838-10.055-3.838-13.893,0    c-3.838,3.838-3.838,10.055,0,13.893l246.18,246.175c1.842,1.842,4.337,2.878,6.947,2.878c2.61,0,5.104-1.036,6.946-2.878    l246.17-246.175C512.959,136.021,512.959,129.804,509.121,125.966z"></path></g>
+</g></svg></span>
+            </a>
+            <div class="u-accordion-pane u-container-style u-white u-accordion-pane-3" id="accordion-4c47" aria-labelledby="link-accordion-4c47">
+              <div class="u-container-layout u-valign-top u-container-layout-3">
+                <ul class="u-text u-text-4">
+                  <li data-en="The tests in the 'Check knowledge' section are selected in accordance with the analyzed functions and phrases. You can choose the section in which you want to test your understanding and take the test. In the test, you will need to translate the highlighted construction into English or choose from the provided answer options."
+                      data-ru="Тесты подобраны в соответствии с проанализированными функциями и словосочетаниями. Вы можете выбрать раздел, в котором хотите проверить свое понимание, и пройти тест. В тесте Вам нужно будет перевести выделенную конструкцию на английский или выбрать из представленных вариантов ответа."><br>
+                    <br>
+                  </li>
+                  <li data-en="If you are a registered user, in your personal account you will be able to select tests for the understanding of the structures that you were looking for, such tests will be generated automatically."
+                      data-ru="Если вы зарегистрированный пользователь, в вашем личном аккаунте вы сможете выбрать тесты на понимание конструкций, которые вы искали, такие тесты будут генерироваться автоматически."></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="u-accordion-item u-accordion-item-4">
+            <a class="u-accordion-link u-active-custom-color-2 u-button-style u-grey-5 u-radius-8 u-text-active-white u-text-grey-60 u-text-hover-black u-accordion-link-4" id="link-accordion-a910" aria-controls="accordion-a910" aria-selected="false">
+              <span class="u-accordion-link-text" data-ru="Контакты" data-en="Contacts"><span class="u-accordion-link-icon u-icon u-text-grey-40 u-icon-4"><svg class="u-svg-link" preserveAspectRatio="xMidYMin slice" viewBox="0 0 512 512" style=""><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#svg-6813"></use></svg><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" xml:space="preserve" class="u-svg-content" viewBox="0 0 512 512" x="0px" y="0px" id="svg-6813" style="enable-background:new 0 0 512 512;"><g><g><path d="M509.121,125.966c-3.838-3.838-10.055-3.838-13.893,0L256.005,365.194L16.771,125.966c-3.838-3.838-10.055-3.838-13.893,0    c-3.838,3.838-3.838,10.055,0,13.893l246.18,246.175c1.842,1.842,4.337,2.878,6.947,2.878c2.61,0,5.104-1.036,6.946-2.878    l246.17-246.175C512.959,136.021,512.959,129.804,509.121,125.966z"></path>
+</g>
+</g></svg></span>
+            </a>
+            <div class="u-accordion-pane u-container-style u-white u-accordion-pane-4" id="accordion-a910" aria-labelledby="link-accordion-a910">
+              <div class="u-container-layout u-container-layout-4">
+                <p class="u-text u-text-5"> If you have technical problems or think that some section needs to be improved and / or corrected, our contacts:<br>
+                  <br>email: {{example_email}}<br>or<br>tg: {{example_tg_account}}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+{% endblock %}

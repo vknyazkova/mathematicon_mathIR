@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="col-md-5 justify-content-center" style="margin-top: 5%; margin-left: auto; margin-right: auto">
+    <form>
+        <div class="row">
+        <label for="inputName" class="col-form-label text-start" data-en="Nickname" data-ru="Имя"></label>
+        <div class="row">
+          <input type="password" class="form-control login-form" id="inputName">
+        </div>
+      </div>
+      <div class="row">
+        <label for="inputEmail" class="col-form-label text-start" data-en="Email" data-ru="Почта"></label>
+        <div class="row">
+          <input type="email" class="form-control login-form" id="inputEmail">
+        </div>
+      </div>
+      <div class="row">
+        <label for="inputPassword" class="col-form-label text-start" data-en="Password" data-ru="Пароль"></label>
+        <div class="row">
+          <input type="password" class="form-control login-form" id="inputPassword">
+        </div>
+      </div>
+        <div class="row">
+
+        <label for="inputPasswordcheck" class="col-form-label text-start" data-en="Repeat password" data-ru="Повторите пароль"></label>
+
+        <div class="row">
+          <input type="password" class="form-control login-form" id="inputPasswordcheck">
+        </div>
+      </div>
+        <div class="row mb-3 justify-content-center">
+      <button type="submit" class="btn btn-light" style="width: fit-content" data-ru="Зарегитрироваться" data-en="Sign up"></button>
+            </div>
+    </form>
+    </div>
+
+
+
+{% endblock %}
