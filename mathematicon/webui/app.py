@@ -6,8 +6,9 @@ import spacy
 from .secret import FLASK_SECRET_KEY
 from .. import DB_PATH
 from ..backend.models.text_search import TextSearch
-from ..backend.models.database import WebDBHandler
+from ..backend.models.database import WebDBHandler, TextDBHandler
 
+from ..backend.models.converters import YamlConverter
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = FLASK_SECRET_KEY
@@ -24,5 +25,5 @@ def hello_world():  # put application's code here
 
 if __name__ == '__main__':
     text_search = TextSearch(db, nlp)
-    print(db.sent_context(1, 2))
-    app.run()
+    text_search.search('три в степени')
+    # app.run()

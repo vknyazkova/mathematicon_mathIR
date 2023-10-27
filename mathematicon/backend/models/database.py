@@ -97,14 +97,15 @@ class TextDBHandler(DBHandler):
             youtube_link = :yb_link,
             level_id = (SELECT id FROM text_difficulty WHERE name = :level),
             math_branch_id = (SELECT id FROM math_branches WHERE name = :branch)
-            WHERE filename = :filename''', text_info)
+            WHERE filename = :filename
+            ''', text_info)
             self.conn.commit()
         except Exception as e:
             self.conn.rollback()
             print(e)
 
     def add_sentence(self,
-                     sentence: DatabaseSentence) -> int:
+                     sentence: DatabaseSentence):
         """
         Adds information about sentence
         Args:
@@ -120,11 +121,12 @@ class TextDBHandler(DBHandler):
             (SELECT id FROM texts WHERE filename = :filename), 
             :sent_text, 
             :lemmatized, 
-            :pos_in_text)''', sentence_info)
+            :pos_in_text)
+            ''', sentence_info)
             self.conn.commit()
-        except Exception as e:
+        except sqlite3.IntegrityError as e:
             self.conn.rollback()
-            print(e)
+            print('This sentence is already in database')
 
     def add_lemmas(self,
                    lemmas: Iterable[Tuple[str, ]],
@@ -151,10 +153,10 @@ class TextDBHandler(DBHandler):
         Args:
             sentence: instance of DatabaseSentence class
         """
-        lemmas = sentence.tokens_attr('lemma_', 'tuple')
-        poses = sentence.tokens_attr('tag_', 'tuple')
-        tokens_info = iter(sentence)
         try:
+            lemmas = sentence.tokens_attr('lemma_', 'tuple')
+            poses = sentence.tokens_attr('tag_', 'tuple')
+            tokens_info = iter(sentence)
             self.add_lemmas(lemmas, commit=False)
             self.add_poses(poses, commit=False)
             self.conn.executemany('''
@@ -173,16 +175,16 @@ class TextDBHandler(DBHandler):
             (SELECT id FROM pos WHERE name = :pos),
             (SELECT id FROM lemmas WHERE name = :lemma))''', tokens_info)
             self.conn.commit()
-        except Exception as e:
+        except sqlite3.IntegrityError as e:
             self.conn.rollback()
-            print(e)
+            print('This tokens are already in database. If you want to update use update_sentence_tokens_info')
 
     def update_sentence_tokens_info(self,
                                     sentence: DatabaseSentence):
-        lemmas = sentence.tokens_attr("lemma_", "tuple")
-        poses = sentence.tokens_attr("tag_", "tuple")
-        tokens_info = iter(sentence)
         try:
+            lemmas = sentence.tokens_attr("lemma_", "tuple")
+            poses = sentence.tokens_attr("tag_", "tuple")
+            tokens_info = iter(sentence)
             self.add_lemmas(lemmas, commit=False)
             self.add_poses(poses, commit=False)
             self.conn.executemany(
@@ -228,19 +230,30 @@ class WebDBHandler(DBHandler):
 
     def sent_context(self,
                      text_id: int,
-                     pos_in_text: int) -> list:
+                     pos_in_text: int) -> Tuple[str, str]:
         cur = self.conn.execute('''
         SELECT sents.sent
         FROM sents
         WHERE text_id = :text_id
-        AND (pos_in_text = :pos_in_text - 1) OR (pos_in_text = :pos_in_text + 1)
-        ORDER BY sents.pos_in_text
+        AND (pos_in_text = :pos_in_text - 1)
         ''', {'text_id': text_id, 'pos_in_text': pos_in_text})
         cur.row_factory = self.one_column_factory
-        return cur.fetchall()
+        left = cur.fetchone()
+        cur = self.conn.execute(
+            """
+                SELECT sents.sent
+                FROM sents
+                WHERE text_id = :text_id
+                AND (pos_in_text = :pos_in_text + 1)
+                """,
+            {"text_id": text_id, "pos_in_text": pos_in_text},
+        )
+        cur.row_factory = self.one_column_factory
+        right = cur.fetchone()
+        return left, right
 
     def sent_token_info(self,
-                        sent_id: int):
+                        sent_id: int) -> List[dict]:
         cur = self.conn.execute('''
         SELECT tokens.token, tokens.whitespace, pos.name AS 'pos', lemmas.name AS 'lemma'
         FROM tokens
@@ -251,14 +264,6 @@ class WebDBHandler(DBHandler):
         WHERE tokens.sent_id = (?)
         ORDER BY tokens.pos_in_sent
         ''', (sent_id,))
+        cur.row_factory = self.dict_factory
+        return cur.fetchall()
 
-
-
-if __name__ == '__main__':
-    from mathematicon.config import DATA_PATH
-    from pathlib import Path
-
-    db_path = Path(DATA_PATH, 'mathematicon.db')
-
-    db = WebDBHandler(db_path)
-    print(db.sents_with_query_words(['бэ', 'степень']))
