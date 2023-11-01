@@ -170,11 +170,11 @@
           </button>
         </form>
         <div class="result-container02">
-          <h1 class="result-text03" data-ru="Результаты для:" data-en="Results for:"></h1>
+          <h2 class="result-text03" data-ru="Результаты для:" data-en="Results for:"></h2>
           <div class="result-container03">
             <h3 class="result-text04">
               {% for word in query_info.tokens %}
-                 <abbr class="tooltip tooltip--right {{word.color}}" data-tooltip="Model: {{word.html_type}}">{{word.text}} </abbr>
+                 <abbr class="tooltip tooltip--right {{word.color}}" data-tooltip="Model: ---">{{word.text}} </abbr>
               {%endfor%}
             </h3>
             <a class="result-icon02" onclick="makeSound()"><img src="static/images/speaker.png" width="auto" height="20px"></a>
@@ -219,11 +219,13 @@
               </p>
               <div class="result-container-sent-icons">
                 <!-- избранное, еще не реализовано -->
+
                 {% if sent.star%}
-                  <a class="result-icon05 star"><img src="static/images/star_added.png" width="auto" height="20px"></a>
+                  <button class="result-icon05 star plus" onclick="runPythonScript()">
                 {% else %}
-                  <a class="result-icon05 star"><img src="static/images/star_default.png" width="auto" height="20px"></a>
+                  <button class="result-icon05 star plus minus" onclick="runPythonScript()">
                 {% endif %}
+                </button>
                 <!-- ютуб -->
                 {% if sent.yb_link %}
                 <a href="{{ sent.yb_link }}" target="_blank">
@@ -319,5 +321,10 @@ $(".switchlang").click(function() {
             });
         }
     </script>
+  <script>
+    $(".plus").click(function(){
+      $(this).toggleClass("minus")  ;
+    })
+  </script>
   </body>
 </html>
