@@ -20,14 +20,20 @@ def main_page(lang):
 def result(lang):
     if request.form['type'] == "By text":
         user_request = request.form["query"]
-        query_info, sents_info = text_search.search(user_request)
+        '''
         query_string = ' '.join([t.text for t in query_info.tokens])
         if sents_info != []:
             ex_sent = sents_info[0]
             sentence_string = ''.join([t.text for t in ex_sent.tokens])
             print(sentence_string)
             print(sents_info[0].tokens)
-
+        '''
     else:
         user_request = "вы ввели формулу"
-    return render_template('result.html', main_lan=lang, query_info=query_info, sents_info=sents_info, query=query_string)
+    return redirect(url_for('result_page', lang=lang, query=user_request))
+
+@app.route('/<query>_<lang>')
+def result_page(query, lang, ):
+    query_info, sents_info = text_search.search(query)
+    return render_template('result.html', main_lan=lang, query_info=query_info, sents_info=sents_info,
+                           query=query)

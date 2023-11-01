@@ -495,3 +495,6 @@ margin-left: 0;
 input[type=radio]#pink-radio {
             accent-color: #ba7fc1ff;
         }
+textarea:focus, input:focus{
+    outline: none;
+}
