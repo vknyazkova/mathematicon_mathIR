@@ -21,6 +21,7 @@ class HTMLWord(HTMLSpan):
 
 @dataclass
 class HTMLsentence:
+    id: int
     tokens: List[HTMLSpan] = field(default_factory=list)
     left: str = ''
     right: str = ''

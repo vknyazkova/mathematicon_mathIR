@@ -46,12 +46,16 @@ class TextSearch:
                 matching_sents.append((sent['id'], matches))
         return matching_sents
 
+    def user_favourites(self,
+                        userid: int):
+        ...
+
     def create_html_sentences(self,
                               query_info: QueryInfo,
                               selected_sents) -> Iterable[HTMLsentence]:
         html_sentences = []
         for sent_id, match in selected_sents:
-            html_sentence = HTMLsentence()
+            html_sentence = HTMLsentence(sent_id)
             sent_info = self.db.sent_info(sent_id)
             left, right = self.db.sent_context(sent_info['text_id'], sent_info['pos_in_text'])
             html_sentence.left = left
