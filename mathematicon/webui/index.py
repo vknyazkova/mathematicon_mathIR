@@ -1,5 +1,6 @@
 from flask import render_template, redirect, url_for, request
 
+
 from .app import app, nlp, webdb
 from ..backend.models.text_search import TextSearch
 
@@ -36,4 +37,12 @@ def result(lang):
 def result_page(query, lang, ):
     query_info, sents_info = text_search.search(query)
     return render_template('result.html', main_lan=lang, query_info=query_info, sents_info=sents_info,
-                           query=query)
+                           query=query, authorized=True)
+
+
+@app.route('/favourites/', methods=['POST', 'GET'])
+def remove_sent():
+    user_request = request.get_json()
+    #print(user_request['method'], user_request['id'])
+    return "blurp"
+

@@ -31,6 +31,7 @@
       }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script type="text/javascript" src="static/js/scripts.js"></script>
     <link
       rel="stylesheet"
@@ -219,13 +220,13 @@
               </p>
               <div class="result-container-sent-icons">
                 <!-- избранное, еще не реализовано -->
-
-                {% if sent.star%}
-                  <button class="result-icon05 star plus" onclick="runPythonScript()">
-                {% else %}
-                  <button class="result-icon05 star plus minus" onclick="runPythonScript()">
+                {% if authorized %}
+                  {% if sent.star %}
+                    <button id="{{sent.id}}" class="result-icon05 plus minus" onclick="send_id(this.id)"></button>
+                  {% else %}
+                    <button id="{{sent.id}}" class="result-icon05 plus" onclick="send_id(this.id)"></button>
+                  {% endif %}
                 {% endif %}
-                </button>
                 <!-- ютуб -->
                 {% if sent.yb_link %}
                 <a href="{{ sent.yb_link }}" target="_blank">
@@ -325,6 +326,23 @@ $(".switchlang").click(function() {
     $(".plus").click(function(){
       $(this).toggleClass("minus")  ;
     })
+  </script>
+  <script>
+    function send_id(clicked_id) {
+      var element = document.getElementById(clicked_id);
+      var sent_id = clicked_id;
+      if (element.classList.contains('minus')) {
+       var method = "delete";
+       }else{
+       var method = "add";
+       };
+      let data = {"id": sent_id, "method": method};
+      fetch("/favourites/", {
+        method: "POST",
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+      });
+    }
   </script>
   </body>
 </html>
