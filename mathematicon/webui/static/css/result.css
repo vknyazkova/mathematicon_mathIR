@@ -517,3 +517,12 @@ color: #424242;
     width: max-content;
     padding-left: 10px;
 }
+.black {
+  color: #000000;
+}
+.pink {
+  color: #ce3fbf;
+}
+.green {
+  color: #28b9b9;
+}

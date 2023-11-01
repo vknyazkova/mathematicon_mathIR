@@ -150,14 +150,14 @@
           <!-- пока не подключено -->
           <div class="search-container-radios">
                 <div class="search-container-radio">
-                  <input type="radio" id="pink" name="type" value="By text" checked="checked" required="required" class="home-radiobutton"/>
+                  <input type="radio" id="pink-radio" name="type" value="By text" checked="checked" required="required" class="home-radiobutton"/>
                   <span class="radio-text">
                     <span data-en="By text" data-ru="По словам"></span>
                     <br />
                   </span>
                 </div>
                 <div class="search-container-radio">
-                  <input type="radio" id="pink" name="type" value="By formula" required="required"/>
+                  <input type="radio" id="pink-radio" name="type" value="By formula" required="required"/>
                   <span class="radio-text" data-en="By formula" data-ru="По формуле"></span>
                 </div>
               </div>
@@ -175,7 +175,7 @@
           <div class="result-container03">
             <h3 class="result-text04">
               {% for word in query_info.tokens %}
-                 <abbr class="tooltip tooltip--right {{word.color}}" data-tooltip="Model: {{word.model}}">{{word.token}} </abbr>
+                 <abbr class="tooltip tooltip--right {{word.color}}" data-tooltip="Model: {{word.html_type}}">{{word.text}} </abbr>
               {%endfor%}
             </h3>
             <a class="result-icon02" onclick="makeSound()"><img src="static/images/speaker.png" width="auto" height="20px"></a>
@@ -204,30 +204,26 @@
         <div class="result-container-example">
           <h2 class="result-text-example-n" data-ru="Примеров найдено: {{sents_info|length}}" data-en="Examples found: {{sents_info|length}}"></h2>
           <div class="result-container-list-examples">
-            {% for ResultInfo in sents_info %}
+            {% for sent in sents_info %}
             <div class="result-container-sent-bubble">
               <p class="result-text-sent">
-                <span id="context_b" class="text-in-bubble text-query context">LYA LYA LYA before!</span>
-                <!-- <span onclick="ShowHideContext()" class="context-btn text-in-bubble"><...></span>  -->
+                <span id="context_b" class="text-in-bubble text-query context">{{sent.left}}</span>
                 <span class="text-query">
-                  {% for ResultTokenInfo in ResultInfo.tokens %}
-                    <abbr class="tooltip tooltip--top" data-tooltip="{{ResultTokenInfo.pos}}">
-                      <abbr class="tooltip tooltip--bottom {{ResultTokenInfo.color}}" data-tooltip="{{ResultTokenInfo.lemma}}">{{ResultTokenInfo.token}}</abbr>
-                    </abbr>
-                  {%endfor%}
+                  {% for word in sent.tokens %}{% if word.html_type == 'plain'%}{{word.text}}{% else %}<abbr class="tooltip tooltip--top" data-tooltip="{{word.pos}}"><abbr class="tooltip tooltip--bottom {{word.color}}" data-tooltip="{{word.lemma}}">{{word.text}}</abbr></abbr>{% endif %}{%endfor%}
                 </span>
-                <span id="context_a" class="text-in-bubble text-query context">LYA LYA LYA after!</span>
+                <span id="context_a" class="text-in-bubble text-query context">{{sent.right}}</span>
                 <span onclick="ShowHideContext()" class="context-btn text-in-bubble"><...></span>
               </p>
               <div class="result-container-sent-icons">
-
                 <!-- избранное, еще не реализовано -->
-
+                {% if sent.star%}
+                  <a class="result-icon05 star"><img src="static/images/star_added.png" width="auto" height="20px"></a>
+                {% else %}
                   <a class="result-icon05 star"><img src="static/images/star_default.png" width="auto" height="20px"></a>
-
+                {% endif %}
                 <!-- ютуб -->
-                {% if ResultInfo.youtube_link %}
-                <a href="{{ ResultInfo.youtube_link }}" target="_blank">
+                {% if sent.yb_link %}
+                <a href="{{ sent.yb_link }}" target="_blank">
                   <svg viewBox="0 0 1024 1024" class="result-icon07">
                     <path
                       d="M1013.8 307.2c0 0-10-70.6-40.8-101.6-39-40.8-82.6-41-102.6-43.4-143.2-10.4-358.2-10.4-358.2-10.4h-0.4c0 0-215 0-358.2 10.4-20 2.4-63.6 2.6-102.6 43.4-30.8 31-40.6 101.6-40.6 101.6s-10.2 82.8-10.2 165.8v77.6c0 82.8 10.2 165.8 10.2 165.8s10 70.6 40.6 101.6c39 40.8 90.2 39.4 113 43.8 82 7.8 348.2 10.2 348.2 10.2s215.2-0.4 358.4-10.6c20-2.4 63.6-2.6 102.6-43.4 30.8-31 40.8-101.6 40.8-101.6s10.2-82.8 10.2-165.8v-77.6c-0.2-82.8-10.4-165.8-10.4-165.8zM406.2 644.8v-287.8l276.6 144.4-276.6 143.4z">
