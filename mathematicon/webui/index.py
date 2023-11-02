@@ -1,4 +1,5 @@
 from flask import render_template, redirect, url_for, request
+from flask_login import current_user, login_required
 
 
 from .app import app, nlp, webdb
@@ -33,16 +34,16 @@ def result(lang):
         user_request = "вы ввели формулу"
     return redirect(url_for('result_page', lang=lang, query=user_request))
 
+
 @app.route('/<query>_<lang>')
 def result_page(query, lang, ):
-    query_info, sents_info = text_search.search(query)
+    if current_user.is_authenticated:
+        userid = current_user.id
+    else:
+        userid = None
+    query_info, sents_info = text_search.search(query, userid)
     return render_template('result.html', main_lan=lang, query_info=query_info, sents_info=sents_info,
                            query=query, authorized=True)
 
 
-@app.route('/favourites/', methods=['POST', 'GET'])
-def remove_sent():
-    user_request = request.get_json()
-    #print(user_request['method'], user_request['id'])
-    return "blurp"
 
