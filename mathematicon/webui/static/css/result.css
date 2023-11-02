@@ -517,19 +517,3 @@
 .green {
   color: #28b9b9;
 }
-.plus {
-  background-image: url('../../static/images/star_default.png');
-  background-repeat:no-repeat;
-  background-size: contain;
-  height: 20px;
-  width: 20px;
-  cursor: pointer;
-}
-.minus {
-  background-image: url('../../static/images/star_added.png');
-  background-repeat:no-repeat;
-  background-size: contain;
-  height: 20px;
-  width: 20px;
-  cursor: pointer;
-}

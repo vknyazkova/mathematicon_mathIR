@@ -46,7 +46,6 @@ def result_page(query, lang, ):
                            query=query, authorized=True)
 
 
-
 @app.route('/help_<lang>')
 def help_page(lang):
     # some func() to find POS tags
