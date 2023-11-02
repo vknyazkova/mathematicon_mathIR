@@ -46,3 +46,11 @@ def remove_sent():
     #print(user_request['method'], user_request['id'])
     return "blurp"
 
+@app.route('/help_<lang>')
+def help_page(lang):
+    # some func() to find POS tags
+    poses = list()
+    example_email = "corpus.mathematicon@gmail.com"
+    example_tg_account = "@example"
+    return render_template('help.html', main_lan=lang, POS_tags=poses, example_email=example_email,
+                           example_tg_account=example_tg_account)
