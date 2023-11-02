@@ -90,6 +90,7 @@ class TextSearch:
             i = 0
             for t in self.html_tokens_generator(tokens):
                 if isinstance(t, HTMLWord) and self.token_within_query(query_lemmatized, sent_lemmatized, i):
+                    # TODO: Переписать весь этот ужас с окрашиванием токенов
                     try:
                         token_idx_in_query = query_lemmatized.index(t.lemma)
                         t.color = query_info.tokens[token_idx_in_query].color
