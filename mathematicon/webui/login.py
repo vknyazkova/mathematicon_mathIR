@@ -65,3 +65,16 @@ def account(lang):
         return redirect(url_for('login', lang=lang))
     else:
         return render_template('account.html', main_lan=lang, login=current_user.username, email=current_user.email)
+
+
+@login_required
+@app.route('/favourites/', methods=['POST', 'GET'])
+def remove_sent():
+    db = UserDBHandler(DB_PATH)  # TODO: вынести за декоратор
+    user_request = request.get_json()
+    if user_request['method'] == 'add':
+        # TODO: сделать нормальное заполнение, а не заглушками
+        db.add_favs(current_user.id, query='', query_type=1, sent_id=user_request['id'])
+    elif user_request['method'] == 'delete':
+        db.remove_fav(current_user.id, user_request['id'])
+    return "blurp"

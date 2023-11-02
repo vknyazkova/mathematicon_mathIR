@@ -49,6 +49,27 @@ class UserDBHandler(DBHandler):
         VALUES (?, ?, ?, ?)''', (username, password, salt, email))
         self.conn.commit()
 
+    def add_favs(self,
+                 userid: int,
+                 query: str,
+                 query_type: int,
+                 sent_id: int):
+        self.conn.execute(
+            '''INSERT INTO favourites (user_id, query, query_type, sent_id) 
+            VALUES (?, ?, ?, ?)
+            ''', (userid, query, query_type, sent_id)
+        )
+        self.conn.commit()
+
+    def remove_fav(self,
+                   userid: int,
+                   sent_id: int):
+        self.conn.execute(
+            '''DELETE FROM favourites
+            WHERE user_id = (?) AND sent_id = (?)''', (userid, sent_id)
+        )
+        self.conn.commit()
+
 
 class TextDBHandler(DBHandler):
 
@@ -266,5 +287,17 @@ class WebDBHandler(DBHandler):
         ''', (sent_id,))
         cur.row_factory = self.dict_factory
         return cur.fetchall()
+
+    def get_user_favourites(self,
+                            userid: int,
+                            search_type: int):
+        cur = self.conn.execute('''
+        SELECT favourites.sent_id
+        FROM favourites
+        WHERE favourites.user_id = (?) AND favourites.query_type = (?)
+        ''', (userid, search_type))
+        cur.row_factory = self.one_column_factory
+        return cur.fetchall()
+
 
 
