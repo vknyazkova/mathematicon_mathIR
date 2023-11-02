@@ -51,11 +51,19 @@ class TextSearch:
         ...
 
     def create_html_sentences(self,
+                              userid: int,
                               query_info: QueryInfo,
                               selected_sents) -> Iterable[HTMLsentence]:
         html_sentences = []
+        if userid:
+            user_favs = self.db.get_user_favourites(userid, 1)
+            print(user_favs)
+        else:
+            user_favs = []
         for sent_id, match in selected_sents:
             html_sentence = HTMLsentence(sent_id)
+            if sent_id in user_favs:
+                html_sentence.star = True
             sent_info = self.db.sent_info(sent_id)
             left, right = self.db.sent_context(sent_info['text_id'], sent_info['pos_in_text'])
             html_sentence.left = left
@@ -112,9 +120,10 @@ class TextSearch:
         return video_link
 
     def search(self,
-               query: str) -> Tuple[QueryInfo, Iterable[HTMLsentence]]:
+               query: str,
+               userid: int) -> Tuple[QueryInfo, Iterable[HTMLsentence]]:
         query_info = self.create_query_info(query)
         matching_sents = self.select_sentences([t.lemma for t in query_info.tokens])
-        results = self.create_html_sentences(query_info, matching_sents)
+        results = self.create_html_sentences(userid, query_info, matching_sents)
         return query_info, results
 

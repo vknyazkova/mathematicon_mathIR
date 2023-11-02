@@ -267,4 +267,15 @@ class WebDBHandler(DBHandler):
         cur.row_factory = self.dict_factory
         return cur.fetchall()
 
+    def get_user_favourites(self,
+                            userid: int,
+                            search_type: int):
+        cur = self.conn.execute('''
+        SELECT favourites.sent_id
+        FROM favourites
+        WHERE favourites.user_id = (?) AND favourites.query_type = (?)
+        ''', (userid, search_type))
+        cur.row_factory = self.one_column_factory
+        return cur.fetchall()
+
 
