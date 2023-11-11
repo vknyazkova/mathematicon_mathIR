@@ -167,6 +167,48 @@ class TextDBHandler(DBHandler):
         if commit:
             self.conn.commit()
 
+    def get_sentence_tokens_id(self,
+                               sentence: DatabaseSentence):
+        cur = self.conn.execute("""
+        SELECT tokens.id
+        FROM tokens
+        LEFT JOIN sents
+        ON sents.id = tokens.sent_id
+        LEFT JOIN texts
+        ON sents.text_id = texts.id
+        WHERE texts.filename = :filename
+        AND sents.pos_in_text = :pos_in_text
+        ORDER BY tokens.pos_in_sent""", vars(sentence))
+        cur.row_factory = self.one_column_factory
+        token_ids = cur.fetchall()
+        return token_ids
+
+    def add_morphology(self,
+                       features: Iterable[Tuple[int, str, str]],
+                       commit: bool = True):
+        """
+        Add feature field from conllu to database
+        Args:
+            features: list of tuples(token_id, category, value)
+            commit: commit changes or not
+        """
+        self.conn.executemany('''
+        INSERT INTO morph_features (token_id, category, value)
+        VALUES (?, ?, ?)
+        ''', features)
+        if commit:
+            self.conn.commit()
+
+    def __sentence_morph(self,
+                         token_ids: Iterable[int],
+                         sentence: DatabaseSentence) -> Iterable[Tuple[int, str, str]]:
+
+        morph_info = []
+        for i, t in zip(token_ids, sentence):
+            morph_info.extend(list(map(lambda m: (i, *m), t['morph'])))
+        return morph_info
+
+
     def add_sentence_tokens(self,
                             sentence: DatabaseSentence):
         """
@@ -195,6 +237,9 @@ class TextDBHandler(DBHandler):
             :char_end,
             (SELECT id FROM pos WHERE name = :pos),
             (SELECT id FROM lemmas WHERE name = :lemma))''', tokens_info)
+            inserted_tokens = self.get_sentence_tokens_id(sentence)
+            morph_info = self.__sentence_morph(inserted_tokens, sentence)
+            self.add_morphology(morph_info, commit=False)
             self.conn.commit()
         except sqlite3.IntegrityError as e:
             self.conn.rollback()
