@@ -18,18 +18,12 @@ def main_page(lang):
     return render_template('home.html', main_lan=lang)
 
 
-@app.route('/result_<lang>', methods=['POST', 'GET'])
+@app.route('/result_<lang>', methods=['GET'])
 def result(lang):
-    if request.form['type'] == "By text":
-        user_request = request.form["query"]
-        '''
-        query_string = ' '.join([t.text for t in query_info.tokens])
-        if sents_info != []:
-            ex_sent = sents_info[0]
-            sentence_string = ''.join([t.text for t in ex_sent.tokens])
-            print(sentence_string)
-            print(sents_info[0].tokens)
-        '''
+    # func to redirect and get search params
+    user_request = str
+    if request.form['query_type'] == "By text":
+        user_request = request.form['query']
     else:
         user_request = "вы ввели формулу"
     return redirect(url_for('result_page', lang=lang, query=user_request))

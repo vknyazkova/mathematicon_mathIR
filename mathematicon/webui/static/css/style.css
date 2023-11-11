@@ -429,7 +429,6 @@
     align-items: center;
   }
 }
-
 .footer-footer {
   width: 100%;
   display: flex;
@@ -531,4 +530,85 @@ textarea:focus, input:focus{
   height: 20px;
   width: 20px;
   cursor: pointer;
+}
+.search-container{
+  width: 100%
+}
+
+.search-search {
+  width: 70%;
+  height: 165px;
+  display: flex;
+  position: relative;
+  margin-top: var(--dl-space-space-twounits);
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+}
+.search-container {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+}
+.search-container1 {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  border-color: var(--dl-color-site-darkcyan);
+  border-width: 1px;
+  border-radius: var(--dl-radius-radius-radius4);
+  flex-direction: row;
+  justify-content: flex-end;
+  background-color: var(--dl-color-gray-white);
+}
+.search-textinput {
+  width: 100%;
+  height: 50px;
+  border-width: 0px;
+  border-radius: 0px;
+  background-color: transparent;
+}
+.search-select {
+  border-color: var(--dl-color-site-darkcyan);
+  border-width: 1px;
+  padding-left: var(--dl-space-space-twounits);
+  padding-right: var(--dl-space-space-unit);
+  border-top-width: 0px;
+  border-right-width: 0px;
+  border-bottom-width: 0px;
+  background: white;
+}
+.search-select1 {
+  margin-left: var(--dl-space-space-unit);
+  border-color: var(--dl-color-site-darkcyan);
+  border-width: 1px;
+  margin-right: var(--dl-space-space-halfunit);
+  padding-left: var(--dl-space-space-unit);
+  padding-right: var(--dl-space-space-unit);
+  border-top-width: 0px;
+  border-right-width: 0px;
+  border-bottom-width: 0px;
+  background: white;
+}
+.search-button {
+  width: 93px;
+  height: 37px;
+  align-self: center;
+  margin-top: var(--dl-space-space-twounits);
+  transition: 0.3s;
+  border-width: 0px;
+  background-color: var(--dl-color-site-lightpp);
+}
+.search-button:hover {
+  border: none;
+  background-color: var(--dl-color-site-hoverbtn);
+}
+.search-button:active {
+  border: none;
+  background-color: var(--dl-color-site-activebtn);
+}
+#dropdown {
+font-family: Inter;
 }
