@@ -1,15 +1,15 @@
 import os
 import re
 from pathlib import Path
-from typing import Iterable, Dict, Any, Callable, Union
+from typing import Iterable, Union, Callable, Dict, Any
 
 import yaml
-from yaml.parser import ParserError
 from spacy import Language
-from spacy_conll.parser import ConllParser
+from spacy_conll import ConllParser
+from yaml.parser import ParserError
 
-from .database import TextDBHandler
-from .custom_dataclasses import DatabaseText
+from ..models.custom_dataclasses import DatabaseText
+from ..models.database import TextDBHandler
 
 
 class YamlConverter:
@@ -93,7 +93,7 @@ def update_ud_annot(conllu_file: Union[str, os.PathLike],
     for sent in DatabaseText(conllu_doc, filename=filename):
         db.update_sentence_tokens_info(sent)
 
-#
+
 # if __name__ == '__main__':
 #     files = input('filepaths: ').split(' ')
 #     yaml_converter = YamlConverter(files)
