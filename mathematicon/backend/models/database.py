@@ -1,8 +1,9 @@
 import os
 import sqlite3
-from typing import Iterable, Tuple, Union, List
+from typing import Iterable, Tuple, Union, List, Dict
+from dataclasses import asdict
 
-from .custom_dataclasses import DatabaseToken, DatabaseSentence, DatabaseText
+from .custom_dataclasses import DatabaseToken, DatabaseSentence, DatabaseText, Mathtag, MathtagAttrs
 
 
 class DBHandler:
@@ -265,6 +266,117 @@ class TextDBHandler(DBHandler):
                     WHERE texts.filename = :filename 
                     AND sents.pos_in_text = :sent_pos_in_text)
                     AND pos_in_sent = :pos_in_sent''', tokens_info)
+            self.conn.commit()
+        except Exception as e:
+            self.conn.rollback()
+            print(e)
+
+
+class MathDBHandler(DBHandler):
+
+    def _add_languages(self, info: Iterable[MathtagAttrs], commit: bool = True):
+        """
+        Adds language names to the langs table, ignoring duplicates.
+    
+        Args:
+            info (Iterable[MathtagAttrs]): An iterable of MathtagAttrs objects containing language information.
+                Each object should have the 'lang' attribute representing the language name.
+            commit (bool, optional): If True, commits the changes to the database. Defaults to True.
+        """
+        self.conn.executemany(
+            """
+        INSERT or IGNORE INTO langs (name)
+        VALUES (:lang)""",
+            (asdict(attr) for attr in info),
+        )
+        if commit:
+            self.conn.commit()
+
+    def _add_tag_info(self, info: Iterable[MathtagAttrs], commit: bool = True):
+        """
+        Inserts tag information into the math_tag_info table, adding language names to the langs table if they don't exist.
+    
+        Args:
+            info (Iterable[MathtagAttrs]): An iterable of MathtagAttrs objects containing tag information.
+                Each object should have the following attributes: 'mathtag_id', 'attr_name', 'lang', 'text'.
+            commit (bool, optional): If True, commits the changes to the database. Defaults to True.
+        """
+        self._add_languages(info, commit=False)
+        self.conn.executemany(
+            """
+                    INSERT or IGNORE INTO math_tag_info (math_tag_id, info_type_id, lang_id, text) 
+                    VALUES (
+                    (SELECT id FROM math_tags WHERE inception_id = :mathtag_id),
+                    (SELECT id FROM math_tag_info_types WHERE name = :attr_name),
+                    (SELECT id FROM langs WHERE name = :lang),
+                    :text)""",
+            (asdict(attr) for attr in info),
+        )
+        if commit:
+            self.conn.commit()
+
+    def add_nodes(self, math_tags: Iterable[Mathtag]):
+        """
+        Adds mathematical concept nodes to the math_tags table and their associated tag information to the math_tag_info table.
+    
+        Args:
+            math_tags (Iterable[Mathtag]): An iterable of Mathtag objects representing mathematical concepts.
+    
+        Notes:
+            - If any exception occurs during the insertion process, the changes are rolled back, and the exception is printed.
+        """
+        try:
+            for tag in math_tags:
+                self.conn.execute(
+                    """
+                INSERT INTO math_tags (inception_id)
+                VALUES (:inception_id)""",
+                    asdict(tag),
+                )
+                self._add_tag_info(info=tag.attrs, commit=False)
+                self.conn.commit()
+        except Exception as e:
+            self.conn.rollback()
+            print(e)
+
+    def _add_edge_types(self, math_tags: Iterable[Mathtag], commit: bool = True):
+        """
+        Adds edge types to the kb_edge_types table, ignoring duplicates.
+    
+        Args:
+            math_tags (Iterable[Mathtag]): An iterable of Mathtag objects representing mathematical concepts.
+                Each object should have the 'edge_type' attribute representing the edge type.
+            commit (bool, optional): If True, commits the changes to the database. Defaults to True.
+        """
+        self.conn.executemany(
+            """
+        INSERT or IGNORE INTO kb_edge_types (name)
+        VALUES (:edge_type)""",
+            (asdict(tag) for tag in math_tags if tag.edge_type),
+        )
+        if commit:
+            self.conn.commit()
+
+    def add_edges(self, math_tags: Iterable[Mathtag]):
+        """
+        Adds parent-child relationships and edge types to mathematical concept nodes in the math_tags table.
+    
+        Args:
+            math_tags (Iterable[Mathtag]): An iterable of Mathtag objects representing mathematical concepts.
+    
+        Notes:
+            - If any exception occurs during the update process, the changes are rolled back, and the exception is printed.
+        """
+        try:
+            self._add_edge_types(math_tags, commit=False)
+            self.conn.executemany(
+                """
+            UPDATE math_tags
+            SET parent_id = (SELECT id FROM math_tags WHERE inception_id = :parent_id),
+            edge_type = (SELECT id FROM kb_edge_types WHERE name = :edge_type)
+            WHERE inception_id = :inception_id""",
+                (asdict(tag) for tag in math_tags),
+            )
             self.conn.commit()
         except Exception as e:
             self.conn.rollback()

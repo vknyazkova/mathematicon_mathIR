@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List
+from typing import List, Dict, Union
 from spacy.tokens import Span, Token, Doc
 
 
@@ -138,3 +138,22 @@ class DatabaseSentence:
 
     def dict_(self):
         return {k: v for k, v in vars(self).items() if not k.startswith('_')}
+
+
+@dataclass
+class MathtagAttrs:
+    mathtag_id: str
+    attr_name: str
+    lang: str
+    text: str
+
+
+@dataclass
+class Mathtag:
+    inception_id: str
+    parent_id: Union[str, None]
+    edge_type: Union[str, None]
+    attrs: List[MathtagAttrs] = field(default_factory=list)
+
+
+
