@@ -101,7 +101,6 @@ if __name__ == '__main__':
     from mathematicon import DB_PATH
     from mathematicon.backend.models.mathematicon_morph_parser import MorphologyCorrectionHandler
     from spacy.language import Language
-    from spacy_conll import init_parser
 
     db = TextDBHandler(DB_PATH)
 
@@ -114,7 +113,6 @@ if __name__ == '__main__':
     def morphology_corrector(nlp, name, mode):
         return MorphologyCorrectionHandler(mode=mode)
     nlp = spacy.load("ru_core_news_sm", exclude=["ner"])
-    # nlp = init_parser("ru_core_news_sm", 'spacy', include_headers=True, exclude_spacy_components=['ner'])
     nlp.add_pipe('morphology_corrector', after='lemmatizer')
 
     mode = input('Enter mode (parse or update): ')
