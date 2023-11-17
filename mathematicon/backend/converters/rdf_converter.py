@@ -4,7 +4,7 @@ from typing import Union, Iterable, Dict, Tuple, List
 from bs4 import BeautifulSoup
 from bs4.element import Tag
 
-from ..models.custom_dataclasses import Mathtag, MathtagAttrs
+from ..models.db_data_models import Mathtag, MathtagAttrs
 from ..models.database import MathDBHandler
 
 BASE_PREFIX = "http://www.ukp.informatik.tu-darmstadt.de/inception/1.0#"

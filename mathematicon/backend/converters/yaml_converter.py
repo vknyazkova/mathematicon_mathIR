@@ -8,7 +8,7 @@ from spacy import Language
 from spacy_conll import ConllParser
 from yaml.parser import ParserError
 
-from ..models.custom_dataclasses import DatabaseText
+from ..models.db_data_models import DatabaseText
 from ..models.database import TextDBHandler
 
 
@@ -121,5 +121,3 @@ if __name__ == '__main__':
     elif mode == 'update':
         conllu_file = input('conllu_path: ')
         update_ud_annot(conllu_file, db, nlp)
-
-

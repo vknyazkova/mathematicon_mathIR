@@ -3,7 +3,7 @@ import re
 
 from spacy import Language
 
-from .custom_dataclasses import HTMLsentence, QueryInfo, HTMLWord, HTMLSpan
+from .html_models import HTMLSpan, HTMLWord, HTMLsentence, QueryInfo
 from .database import WebDBHandler
 
 

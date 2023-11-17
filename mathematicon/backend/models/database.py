@@ -3,7 +3,7 @@ import sqlite3
 from typing import Iterable, Tuple, Union, List, Dict
 from dataclasses import asdict
 
-from .custom_dataclasses import DatabaseToken, DatabaseSentence, DatabaseText, Mathtag, MathtagAttrs, DatabaseMorph, DatabaseMorphAnnotation
+from .db_data_models import DatabaseSentence, DatabaseText, Mathtag, MathtagAttrs, DatabaseMorph, DatabaseMorphAnnotation
 
 
 class DBHandler:
