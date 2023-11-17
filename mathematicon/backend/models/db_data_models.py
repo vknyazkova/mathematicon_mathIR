@@ -60,12 +60,6 @@ class DatabaseText:
             )
             yield sentence
 
-    def dict_(self):
-        """
-        Returns: attributes that are related to database fields
-        """
-        return {k: v for k, v in vars(self).items() if not k.startswith('_')}
-
 
 class DatabaseSentence:
     def __init__(self,
@@ -113,9 +107,6 @@ class DatabaseSentence:
                                   sent_pos_in_text=self.pos_in_text)
             yield vars(token)
             char_cur = char_end + len(t.whitespace_)
-
-    def dict_(self):
-        return {k: v for k, v in vars(self).items() if not k.startswith('_')}
 
 
 @dataclass

@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Iterable, Union, Callable, Dict, Any
 
 import yaml
+import spacy
 from spacy import Language
 from spacy_conll import ConllParser
 from yaml.parser import ParserError
@@ -58,7 +59,8 @@ class YamlConverter:
         dest_folder = Path(dest_folder).resolve()
         dest_folder.mkdir(parents=True, exist_ok=True)
 
-        nlp.add_pipe("conll_formatter", last=True)
+        if 'conllu_formatter' not in [pipe[0] for pipe in nlp.pipeline]:
+            nlp.add_pipe("conll_formatter", last=True, config={'include_headers': True})
 
         written_files = []
         for file, info in self.yaml_contents.items():
@@ -76,7 +78,6 @@ class YamlConverter:
             db_text_info = {k: v for k, v in info.items() if k not in ['timecode_start', 'timecode_end', 'text']}
             doc = nlp(info['text'])
             db_text = DatabaseText(doc, filename=file.stem, **db_text_info)
-
             db.add_text(db_text)
             for sent in db_text:
                 db.add_sentence(sent)
@@ -88,6 +89,8 @@ def update_ud_annot(conllu_file: Union[str, os.PathLike],
                     nlp: Language):
     conllu_file = Path(conllu_file).resolve()
     filename = conllu_file.stem
+    if 'conllu_formatter' not in [pipe[0] for pipe in nlp.pipeline]:
+        nlp.add_pipe("conll_formatter", last=True, config={'include_headers': True})
     conllu_nlp = ConllParser(nlp)
     conllu_doc = conllu_nlp.parse_conll_file_as_spacy(conllu_file)
     for sent in DatabaseText(conllu_doc, filename=filename):
@@ -101,6 +104,7 @@ if __name__ == '__main__':
     from spacy_conll import init_parser
 
     db = TextDBHandler(DB_PATH)
+
     @Language.factory(
         "morphology_corrector",
         assigns=["token.lemma", "token.tag"],
@@ -109,15 +113,22 @@ if __name__ == '__main__':
     )
     def morphology_corrector(nlp, name, mode):
         return MorphologyCorrectionHandler(mode=mode)
-    nlp = init_parser("ru_core_news_sm", 'spacy', include_headers=True, exclude_spacy_components=['ner'])
-    print(nlp.pipeline)
-    nlp.add_pipe('morphology_corrector', before='conll_formatter')
+    nlp = spacy.load("ru_core_news_sm", exclude=["ner"])
+    # nlp = init_parser("ru_core_news_sm", 'spacy', include_headers=True, exclude_spacy_components=['ner'])
+    nlp.add_pipe('morphology_corrector', after='lemmatizer')
 
-    mode = input('Enter mode (add or update): ')
-    if mode == 'add':
-        files = input('filepaths: ').split(' ')
+    mode = input('Enter mode (parse or update): ')
+    if mode == 'parse':
+        files = input("filepaths: ").split(" ")
         yaml_converter = YamlConverter(files)
-        yaml_converter.to_database(nlp, db)
+
+        dest = input('Select destination (conllu or database): ')
+
+        if dest == 'database':
+            yaml_converter.to_database(nlp, db)
+        elif dest == 'conllu':
+            dest_folder = input('Path to destination folder: ')
+            yaml_converter.to_conllu(nlp, dest_folder)
     elif mode == 'update':
-        conllu_file = input('conllu_path: ')
+        conllu_file = input('Path to conllu: ')
         update_ud_annot(conllu_file, db, nlp)
