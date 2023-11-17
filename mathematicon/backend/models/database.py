@@ -3,7 +3,7 @@ import sqlite3
 from typing import Iterable, Tuple, Union, List, Dict
 from dataclasses import asdict
 
-from .custom_dataclasses import DatabaseToken, DatabaseSentence, DatabaseText, Mathtag, MathtagAttrs
+from .custom_dataclasses import DatabaseToken, DatabaseSentence, DatabaseText, Mathtag, MathtagAttrs, DatabaseMorph, DatabaseMorphAnnotation
 
 
 class DBHandler:
@@ -184,39 +184,50 @@ class TextDBHandler(DBHandler):
         token_ids = cur.fetchall()
         return token_ids
 
-    # def add_morphology(self,
-    #                    features: Iterable[Tuple[int, str, str]],
-    #                    commit: bool = True):
-    #     """
-    #     Add feature field from conllu to database
-    #     Args:
-    #         features: list of tuples(token_id, category, value)
-    #         commit: commit changes or not
-    #     """
-    #     self.conn.executemany('''
-    #     INSERT INTO morph_features (token_id, category, value)
-    #     VALUES (?, ?, ?)
-    #     ''', features)
-    #     if commit:
-    #         self.conn.commit()
-
     @staticmethod
-    def _create_morph_info(token_ids: Iterable[int],
-                           sentence: DatabaseSentence) -> Iterable[Tuple[int, str, str]]:
+    def _create_sentence_morph_info(token_ids: Iterable[int],
+                                    sentence: DatabaseSentence) -> Iterable[DatabaseMorphAnnotation]:
         morph_info = []
         for i, t in zip(token_ids, sentence):
-            morph_info.extend(list(map(lambda m: (i, *m), t['morph'])))
+            morph_info.extend([DatabaseMorphAnnotation(token_id=i,
+                                                       category=m.category,
+                                                       value=m.value) for m in t['morph']])
         return morph_info
+
+    def _add_morph_categories(self,
+                              morph: Iterable[DatabaseMorph],
+                              commit: bool = True):
+        self.conn.executemany('''
+        INSERT or IGNORE INTO morph_categories (name)
+        VALUES (:category)
+        ''', (asdict(m) for m in morph))
+        if commit:
+            self.conn.commit()
+
+    def _add_morph_values(self,
+                          morph: Iterable[DatabaseMorph],
+                          commit: bool = True):
+        self.conn.executemany('''
+        INSERT or IGNORE INTO morph_values (name)
+        VALUES (:value)
+        ''', (asdict(m) for m in morph))
+        if commit:
+            self.conn.commit()
 
     def _add_sentence_morph(self,
                             sentence: DatabaseSentence,
                             commit: bool = True):
         token_ids = self.get_sentence_tokens_id(sentence)
-        morph_info = self._create_morph_info(token_ids, sentence)
+        morph_info = self._create_sentence_morph_info(token_ids, sentence)
+        self._add_morph_categories(morph_info, commit=commit)
+        self._add_morph_values(morph_info, commit=commit)
         self.conn.executemany('''
-                INSERT INTO morph_features (token_id, category, value)
-                VALUES (?, ?, ?)
-                ''', morph_info)
+                INSERT INTO morph_features (token_id, category_id, value_id)
+                VALUES (
+                :token_id, 
+                (SELECT id FROM morph_categories WHERE name = :category), 
+                (SELECT id FROM morph_values WHERE name = :value))
+                ''', (asdict(m) for m in morph_info))
         if commit:
             self.conn.commit()
 

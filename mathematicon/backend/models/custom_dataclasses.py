@@ -35,6 +35,17 @@ class QueryInfo:
     formula: List[str] = None
 
 
+@dataclass
+class DatabaseMorph:
+    category: str
+    value: str
+
+
+@dataclass
+class DatabaseMorphAnnotation(DatabaseMorph):
+    token_id: int
+
+
 class DatabaseToken:
     def __init__(self,
                  spacy_token: Token,
@@ -47,7 +58,7 @@ class DatabaseToken:
         self.whitespace = 1 if spacy_token.whitespace_ else 0
         self.lemma = spacy_token.lemma_
         self.pos = spacy_token.tag_
-        self.morph = spacy_token.morph.to_dict().items()
+        self.morph = [DatabaseMorph(category=c, value=v) for c, v in spacy_token.morph.to_dict().items()]
 
         self.pos_in_sent = pos_in_sent
         self.char_start = char_start
@@ -121,7 +132,6 @@ class DatabaseSentence:
                 yield attr_val
             elif out_style == 'dict':
                 yield {attr_name, attr_val}
-
 
     def __iter__(self):
         char_cur = 0
