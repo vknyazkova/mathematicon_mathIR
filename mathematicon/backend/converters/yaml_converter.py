@@ -110,7 +110,8 @@ if __name__ == '__main__':
     def morphology_corrector(nlp, name, mode):
         return MorphologyCorrectionHandler(mode=mode)
     nlp = init_parser("ru_core_news_sm", 'spacy', include_headers=True, exclude_spacy_components=['ner'])
-    nlp.add_pipe('morphology_corrector')
+    print(nlp.pipeline)
+    nlp.add_pipe('morphology_corrector', before='conll_formatter')
 
     mode = input('Enter mode (add or update): ')
     if mode == 'add':
