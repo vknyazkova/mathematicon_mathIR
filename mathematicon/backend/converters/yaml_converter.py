@@ -94,25 +94,31 @@ def update_ud_annot(conllu_file: Union[str, os.PathLike],
         db.update_sentence_tokens_info(sent)
 
 
-# if __name__ == '__main__':
-#     files = input('filepaths: ').split(' ')
-#     yaml_converter = YamlConverter(files)
-#
-#     from mathematicon import DB_PATH
-#     from mathematicon.backend.models.mathematicon_morph_parser import MorphologyCorrectionHandler
-#     from spacy.language import Language
-#     from spacy_conll import init_parser
-#
-#     db = TextDBHandler(DB_PATH)
-#     @Language.factory(
-#         "morphology_corrector",
-#         assigns=["token.lemma", "token.tag"],
-#         requires=["token.pos"],
-#         default_config={"mode": "ptcp+conv"},
-#     )
-#     def morphology_corrector(nlp, name, mode):
-#         return MorphologyCorrectionHandler(mode)
-#     nlp = init_parser("ru_core_news_sm", 'spacy', include_headers=True, exclude_spacy_components=['ner'])
-#
-#     print(yaml_converter.yaml_contents.values())
-#     yaml_converter.to_database(nlp, db)
+if __name__ == '__main__':
+    from mathematicon import DB_PATH
+    from mathematicon.backend.models.mathematicon_morph_parser import MorphologyCorrectionHandler
+    from spacy.language import Language
+    from spacy_conll import init_parser
+
+    db = TextDBHandler(DB_PATH)
+    @Language.factory(
+        "morphology_corrector",
+        assigns=["token.lemma", "token.tag"],
+        requires=["token.pos"],
+        default_config={"mode": "ptcp+conv"},
+    )
+    def morphology_corrector(nlp, name, mode):
+        return MorphologyCorrectionHandler(mode=mode)
+    nlp = init_parser("ru_core_news_sm", 'spacy', include_headers=True, exclude_spacy_components=['ner'])
+    nlp.add_pipe('morphology_corrector')
+
+    mode = input('Enter mode (add or update): ')
+    if mode == 'add':
+        files = input('filepaths: ').split(' ')
+        yaml_converter = YamlConverter(files)
+        yaml_converter.to_database(nlp, db)
+    elif mode == 'update':
+        conllu_file = input('conllu_path: ')
+        update_ud_annot(conllu_file, db, nlp)
+
+

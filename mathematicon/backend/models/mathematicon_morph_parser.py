@@ -10,9 +10,9 @@ class MorphologyCorrectionHandler:
     Applies different corrections to the previously parsed tokens
     """
 
-    def __init__(self, additional_parser='pymorphy2', mode='allpos+ptcp+conv'):
+    def __init__(self, mode='allpos+ptcp+conv'):
         try:
-            from pymorphy2 import MorphAnalyzer
+            from pymorphy3 import MorphAnalyzer
         except ImportError:
             raise ImportError(
                 "This class requires the "
