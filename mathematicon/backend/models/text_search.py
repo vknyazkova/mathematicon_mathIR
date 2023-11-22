@@ -70,7 +70,7 @@ class TextSearch:
                               selected_sents) -> Iterable[HTMLsentence]:
         html_sentences = []
         if userid:
-            user_favs = self.db.get_user_favourites(userid, 1)
+            user_favs = self.db.get_user_favourites(userid)
         else:
             user_favs = []
         sorted_sents = sorted(selected_sents, key=lambda x: 1 if x[0] in user_favs else 0, reverse=True)

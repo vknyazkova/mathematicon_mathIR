@@ -57,7 +57,7 @@ class UserDBHandler(DBHandler):
                  query_type: int,
                  sent_id: int):
         self.conn.execute(
-            '''INSERT INTO favourites (user_id, query, query_type, sent_id) 
+            '''INSERT or REPLACE INTO favourites (user_id, query, query_type, sent_id) 
             VALUES (?, ?, ?, ?)
             ''', (userid, query, query_type, sent_id)
         )
@@ -650,13 +650,12 @@ class WebDBHandler(DBHandler):
         return cur.fetchall()
 
     def get_user_favourites(self,
-                            userid: int,
-                            search_type: int):
+                            userid: int):
         cur = self.conn.execute('''
         SELECT favourites.sent_id
         FROM favourites
-        WHERE favourites.user_id = (?) AND favourites.query_type = (?)
-        ''', (userid, search_type))
+        WHERE favourites.user_id = (?)
+        ''', (userid,))
         cur.row_factory = self.one_column_factory
         return cur.fetchall()
 
