@@ -21,23 +21,42 @@ def main_page(lang):
 @app.route('/result_<lang>', methods=['GET'])
 def result(lang):
     # func to redirect and get search params
-    user_request = str
-    if request.form['query_type'] == "By text":
-        user_request = request.form['query']
-    else:
-        user_request = "вы ввели формулу"
-    return redirect(url_for('result_page', lang=lang, query=user_request))
-
-
-@app.route('/<query>_<lang>')
-def result_page(query, lang, ):
     if current_user.is_authenticated:
         userid = current_user.id
     else:
         userid = None
-    query_info, sents_info = text_search.search(query, userid)
-    return render_template('result.html', main_lan=lang, query_info=query_info, sents_info=sents_info,
-                           query=query, authorized=True)
+    query = request.args['query']
+
+    if request.args['query_type'] == 'text':
+        search_type = request.args.get('search_type', 'lemma')
+        query_info, sents_info = text_search.search(query, userid, search_type)
+    elif request.args['query_type'] == 'formula':
+        raise NotImplementedError
+
+    return render_template(
+        "result.html",
+        main_lan=lang,
+        query_info=query_info,
+        sents_info=sents_info,
+        query=query,
+        authorized=True,
+    )
+    # if request.form['query_type'] == "By text":
+    #     user_request = request.form['query']
+    # else:
+    #     user_request = "вы ввели формулу"
+    # return redirect(url_for('result_page', lang=lang, query=user_request))
+
+
+# @app.route('/<query>_<lang>')
+# def result_page(query, lang, ):
+#     if current_user.is_authenticated:
+#         userid = current_user.id
+#     else:
+#         userid = None
+#     query_info, sents_info = text_search.search(query, userid)
+#     return render_template('result.html', main_lan=lang, query_info=query_info, sents_info=sents_info,
+#                            query=query, authorized=True)
 
 
 @app.route('/help_<lang>')

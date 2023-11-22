@@ -148,9 +148,13 @@ class TextSearch:
 
     def search(self,
                query: str,
-               userid: int) -> Tuple[QueryInfo, Iterable[HTMLsentence]]:
+               userid: int,
+               search_type: str = 'lemma') -> Tuple[QueryInfo, Iterable[HTMLsentence]]:
         query_info = self.create_query_info(query)
-        matching_sents = self.select_sentences([t.lemma for t in query_info.tokens])
-        results = self.create_html_sentences(userid, query_info, matching_sents)
+        if search_type == 'lemma':
+            matching_sents = self.select_sentences([t.lemma for t in query_info.tokens])
+            results = self.create_html_sentences(userid, query_info, matching_sents)
+        else:
+            raise NotImplementedError
         return query_info, results
 
