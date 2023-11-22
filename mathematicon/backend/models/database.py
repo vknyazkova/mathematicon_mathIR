@@ -617,5 +617,12 @@ class WebDBHandler(DBHandler):
         cur.row_factory = self.one_column_factory
         return cur.fetchall()
 
+    def get_pos_info(self):
+        cur = self.conn.execute('''
+        SELECT name, descr_rus, descr_eng, examples, UD_link
+        FROM pos
+        ORDER BY name''')
+        return cur.fetchall()
+
 
 

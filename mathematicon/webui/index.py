@@ -61,8 +61,7 @@ def result(lang):
 
 @app.route('/help_<lang>')
 def help_page(lang):
-    # some func() to find POS tags
-    poses = list()
+    poses = webdb.get_pos_info()
     example_email = "corpus.mathematicon@gmail.com"
     example_tg_account = "@example"
     return render_template('help.html', main_lan=lang, POS_tags=poses, example_email=example_email,
