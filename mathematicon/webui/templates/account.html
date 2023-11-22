@@ -193,9 +193,11 @@
               </div>
             </div>
             <div id="history" class="account-container-history hide">
-              <div class="account-container5">
-                <span class="account-history-query">Text</span>
-              </div>
+                <div class="account-container5">
+                  {% for item in history_list %}
+                    <a href="/result_{{ main_lan }}?{{ item[1] }}" class="account-history-query">{{ item[0] }}</a>
+                  {% endfor %}
+                </div>
             </div>
             <div id="tests" class="account-container-tests hide">
               <h1>

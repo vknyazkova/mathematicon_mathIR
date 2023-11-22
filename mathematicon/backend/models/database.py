@@ -104,6 +104,16 @@ class UserDBHandler(DBHandler):
         VALUES (?, ?, ?)""", (userid, query, current_time))
         self.conn.commit()
 
+    def get_user_history(self,
+                         userid: int):
+        cur = self.conn.execute("""
+        SELECT query
+        FROM user_history
+        WHERE user_id=?
+        ORDER BY time""", (userid,))
+        cur.row_factory = self.one_column_factory
+        return cur.fetchall()
+
 
 class TextDBHandler(DBHandler):
 

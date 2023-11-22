@@ -1,4 +1,5 @@
 from sqlite3 import IntegrityError
+from urllib.parse import parse_qs
 
 from flask import redirect, url_for, flash, request, render_template
 from flask_login import LoginManager, login_required, login_user, logout_user, current_user
@@ -11,7 +12,7 @@ from .. import DB_PATH
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-db = UserDBHandler(DB_PATH)
+user_db = UserDBHandler(DB_PATH)
 
 
 @login_manager.user_loader
@@ -34,7 +35,7 @@ def reg_page(lang):
         email = request.form['email']
         hashed_password, salt = User.hash_password(password)
         try:
-            db.add_user(username, hashed_password, salt, email)
+            user_db.add_user(username, hashed_password, salt, email)
             flash('You\'ve been successfully logged-in')
             user = User(DB_PATH).get(username)
             login_user(user, remember=True)
@@ -65,7 +66,13 @@ def account(lang):
     if not current_user.is_authenticated:
         return redirect(url_for('login', lang=lang))
     else:
-        return render_template('account.html', main_lan=lang, login=current_user.username, email=current_user.email)
+        user_queries = user_db.get_user_history(current_user.id)
+        history_list = [(parse_qs(q)['query'][0], q) for q in user_queries]
+        return render_template('account.html',
+                               main_lan=lang,
+                               login=current_user.username,
+                               email=current_user.email,
+                               history_list=history_list)
 
 
 @login_required
@@ -75,7 +82,7 @@ def remove_sent():
     if user_request['method'] == 'add':
         query = ' '.join(user_request['query'].split('+'))
         query_type = '_'.join([user_request.get('query_type', 'text'), user_request.get('search_type', 'lemma')])
-        db.add_favs(current_user.id, query=query, query_type=query_type, sent_id=user_request['id'])
+        user_db.add_favs(current_user.id, query=query, query_type=query_type, sent_id=user_request['id'])
     elif user_request['method'] == 'delete':
-        db.remove_fav(current_user.id, user_request['id'])
+        user_db.remove_fav(current_user.id, user_request['id'])
     return "blurp"

@@ -1,6 +1,7 @@
+from urllib.parse import unquote
+
 from flask import render_template, redirect, url_for, request
 from flask_login import current_user, login_required
-
 
 from .app import app, nlp, webdb
 from ..backend.models.text_search import TextSearch
@@ -27,7 +28,8 @@ def result(lang):
     query = request.args["query"]
     if current_user.is_authenticated:
         userid = current_user.id
-        user_db.add_history(userid, query)
+        query_string = unquote(request.query_string.decode("utf-8"))
+        user_db.add_history(userid, query_string)
     else:
         userid = None
     if request.args['query_type'] == 'text':
