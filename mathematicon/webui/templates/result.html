@@ -328,19 +328,46 @@ $(".switchlang").click(function() {
   </script>
   <script>
     function send_id(clicked_id) {
-      var element = document.getElementById(clicked_id);
-      var sent_id = clicked_id;
-      if (element.classList.contains('minus')) {
-       var method = "delete";
-       }else{
-       var method = "add";
-       };
-      let data = {"id": sent_id, "method": method};
-      fetch("/favourites/", {
-        method: "POST",
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(data)
-      });
+        var element = document.getElementById(clicked_id);
+        var sent_id = clicked_id;
+
+        // Retrieve query parameters from the current URL
+        var urlParams = new URLSearchParams(window.location.search);
+        var query = urlParams.get("query");
+        var query_type = urlParams.get("query_type");
+        var search_type = urlParams.get("search_type");
+
+        if (element.classList.contains('minus')) {
+            var method = "delete";
+        } else {
+            var method = "add";
+        };
+
+        // Build the data object
+        let data = {
+            "id": sent_id,
+            "method": method,
+            "query": query,
+        };
+
+        // Add query_type to data if they exist
+        if (query_type) {
+            data.query_type = query_type;
+        }
+
+        // Add search_type to data if it exists
+        if (search_type) {
+            data.search_type = search_type;
+        }
+
+        // Construct the URL with query parameters
+        var url = "/favourites/";
+
+        fetch(url, {
+            method: "POST",
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
     }
   </script>
   </body>

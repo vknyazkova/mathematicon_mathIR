@@ -11,6 +11,8 @@ from .. import DB_PATH
 login_manager = LoginManager()
 login_manager.init_app(app)
 
+db = UserDBHandler(DB_PATH)
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -31,7 +33,6 @@ def reg_page(lang):
         password = request.form['password']
         email = request.form['email']
         hashed_password, salt = User.hash_password(password)
-        db = UserDBHandler(DB_PATH)
         try:
             db.add_user(username, hashed_password, salt, email)
             flash('You\'ve been successfully logged-in')
@@ -70,11 +71,11 @@ def account(lang):
 @login_required
 @app.route('/favourites/', methods=['POST', 'GET'])
 def remove_sent():
-    db = UserDBHandler(DB_PATH)  # TODO: вынести за декоратор
     user_request = request.get_json()
     if user_request['method'] == 'add':
-        # TODO: сделать нормальное заполнение, а не заглушками
-        db.add_favs(current_user.id, query='', query_type=1, sent_id=user_request['id'])
+        query = ' '.join(user_request['query'].split('+'))
+        query_type = '_'.join([user_request.get('query_type', 'text'), user_request.get('search_type', 'lemma')])
+        db.add_favs(current_user.id, query=query, query_type=query_type, sent_id=user_request['id'])
     elif user_request['method'] == 'delete':
         db.remove_fav(current_user.id, user_request['id'])
     return "blurp"
