@@ -2,6 +2,7 @@ import os
 import sqlite3
 from typing import Iterable, Tuple, Union, List, Dict
 from dataclasses import asdict
+from datetime import datetime
 
 from .db_data_models import DatabaseSentence, DatabaseText, Mathtag, MathtagAttrs, DatabaseMorph, DatabaseMorphAnnotation
 
@@ -69,6 +70,38 @@ class UserDBHandler(DBHandler):
             '''DELETE FROM favourites
             WHERE user_id = (?) AND sent_id = (?)''', (userid, sent_id)
         )
+        self.conn.commit()
+
+    def _count_user_history(self,
+                            userid: int):
+        cur = self.conn.execute("""
+        SELECT COUNT(*) 
+        FROM user_history 
+        WHERE user_id=?""", (userid,))
+        return cur.fetchone()[0]
+
+    def _delete_history(self,
+                        userid: int,
+                        n_oldest_records: int):
+        self.conn.execute('''
+        DELETE FROM user_history
+        WHERE user_id=?
+        ORDER BY time
+        LIMIT ?
+        ''', (userid, n_oldest_records))
+        self.conn.commit()
+
+    def add_history(self,
+                    userid: int,
+                    query: str,
+                    history_limit: int = 5):
+        current_count = self._count_user_history(userid)
+        if current_count >= history_limit:
+            self._delete_history(userid, current_count - history_limit + 1)
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.conn.execute("""
+        INSERT INTO user_history (user_id, query, time)
+        VALUES (?, ?, ?)""", (userid, query, current_time))
         self.conn.commit()
 
 

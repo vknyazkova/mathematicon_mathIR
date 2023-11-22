@@ -4,8 +4,11 @@ from flask_login import current_user, login_required
 
 from .app import app, nlp, webdb
 from ..backend.models.text_search import TextSearch
+from ..backend.models.database import UserDBHandler
+from .. import DB_PATH
 
 text_search = TextSearch(webdb, nlp)
+user_db = UserDBHandler(DB_PATH)
 
 
 @app.route('/')
@@ -21,12 +24,12 @@ def main_page(lang):
 @app.route('/result_<lang>', methods=['GET'])
 def result(lang):
     # func to redirect and get search params
+    query = request.args["query"]
     if current_user.is_authenticated:
         userid = current_user.id
+        user_db.add_history(userid, query)
     else:
         userid = None
-    query = request.args['query']
-
     if request.args['query_type'] == 'text':
         search_type = request.args.get('search_type', 'lemma')
         query_info, sents_info = text_search.search(query, userid, search_type)
