@@ -1,6 +1,7 @@
 Werkzeug==2.3.7
 flask~=2.3.3
 flask-login
-spacy
+spacy>=3.5.4
 PyYAML>=6.0.1
 ru-core-news-sm @ https://github.com/explosion/spacy-models/releases/download/ru_core_news_sm-3.5.0/ru_core_news_sm-3.5.0-py3-none-any.whl
+beautifulsoup4>=4.12.2
