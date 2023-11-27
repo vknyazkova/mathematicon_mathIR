@@ -29,7 +29,7 @@ def result(lang):
     if current_user.is_authenticated:
         userid = current_user.id
         query_string = unquote(request.query_string.decode("utf-8"))
-        user_db.add_history(userid, query_string)
+        # user_db.add_history(userid, query_string)
     else:
         userid = None
     if request.args['query_type'] == 'text':
