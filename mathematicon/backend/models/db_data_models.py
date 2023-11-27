@@ -1,8 +1,6 @@
-from bisect import bisect_left
 from dataclasses import dataclass, field
-from typing import List, Union, Tuple, Dict, Iterable
+from typing import List, Union, Iterable
 
-from bs4.element import Tag
 from spacy.tokens import Span, Token, Doc
 
 

@@ -1,4 +1,4 @@
-from typing import Iterable, Dict, Union, Tuple
+from typing import Iterable, Tuple
 import re
 
 from spacy import Language

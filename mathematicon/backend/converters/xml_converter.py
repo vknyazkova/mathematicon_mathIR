@@ -2,7 +2,6 @@ import os
 from bisect import bisect_left
 from typing import Iterable, Union, Tuple, List, Dict
 from pathlib import Path
-from itertools import groupby
 
 from bs4 import BeautifulSoup
 from bs4.element import Tag
