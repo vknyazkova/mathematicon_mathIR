@@ -91,9 +91,13 @@ class UserDBHandler(DBHandler):
                         n_oldest_records: int):
         self.conn.execute('''
         DELETE FROM user_history
-        WHERE user_id=?
+        WHERE rowid IN (
+        SELECT rowid
+        FROM user_history
+        WHERE user_id = ?
         ORDER BY time
         LIMIT ?
+        )
         ''', (userid, n_oldest_records))
         self.conn.commit()
 
