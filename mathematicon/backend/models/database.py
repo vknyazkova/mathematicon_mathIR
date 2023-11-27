@@ -4,7 +4,13 @@ from typing import Iterable, Tuple, Union, List, Dict
 from dataclasses import asdict
 from datetime import datetime
 
-from .db_data_models import DatabaseSentence, DatabaseText, Mathtag, MathtagAttrs, DatabaseMorph, DatabaseMorphAnnotation
+from .db_data_models import (
+    DatabaseSentence,
+    DatabaseText,
+    Mathtag,
+    MathtagAttrs,
+    DatabaseMorph,
+    DatabaseMorphAnnotation)
 
 
 class DBHandler:
@@ -207,6 +213,12 @@ class TextDBHandler(DBHandler):
         except sqlite3.IntegrityError as e:
             self.conn.rollback()
             print('This sentence is already in database')
+
+    # def get_text_sentences(self, text_filename: str) -> Iterable[Tuple[int, str]]:
+    #     ...
+    #
+    # def get_video_info(self, text_filename: str) -> Tuple[str, str, str]:
+    #     ...
 
     def _add_lemmas(self, lemmas: Iterable[Tuple[str,]], commit: bool = True):
         """
@@ -475,7 +487,6 @@ class TextDBHandler(DBHandler):
             print(e)
 
 
-
 class MathDBHandler(DBHandler):
 
     def _add_languages(self, info: Iterable[MathtagAttrs], commit: bool = True):
@@ -585,6 +596,7 @@ class MathDBHandler(DBHandler):
         except Exception as e:
             self.conn.rollback()
             print(e)
+
 
 
 class WebDBHandler(DBHandler):
