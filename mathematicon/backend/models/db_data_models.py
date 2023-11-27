@@ -1,5 +1,8 @@
+from bisect import bisect_left
 from dataclasses import dataclass, field
-from typing import List, Union
+from typing import List, Union, Tuple, Dict, Iterable
+
+from bs4.element import Tag
 from spacy.tokens import Span, Token, Doc
 
 
@@ -123,6 +126,35 @@ class Mathtag:
     parent_id: Union[str, None]
     edge_type: Union[str, None]
     attrs: List[MathtagAttrs] = field(default_factory=list)
+
+
+@dataclass
+class XMISents:
+    begin: List[int] = field(default_factory=list)
+    end: List[int] = field(default_factory=list)
+    text: List[str] = field(default_factory=list)
+
+
+@dataclass
+class AnnotFrag:
+    filename: str
+    sent_idx: int
+    char_start: int
+    char_end: int
+
+
+@dataclass
+class MathEntityRelated:
+    fragment: AnnotFrag
+    role: str
+
+
+@dataclass
+class MathEntity(AnnotFrag):
+    inception_id: Union[str, None]
+    name: str
+    related: Iterable[MathEntityRelated]
+
 
 
 
