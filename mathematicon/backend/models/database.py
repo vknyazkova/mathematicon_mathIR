@@ -1,10 +1,22 @@
 import os
 import sqlite3
-from typing import Iterable, Tuple, Union, List, Dict
+from typing import Iterable, Tuple, Union, List, Dict, Optional, Any
 from dataclasses import asdict
 from datetime import datetime
+from contextlib import contextmanager
 
-from .db_data_models import (
+# from .db_data_models import (
+#     DatabaseSentence,
+#     DatabaseText,
+#     Mathtag,
+#     MathtagAttrs,
+#     DatabaseMorph,
+#     DatabaseMorphAnnotation,
+#     AnnotFrag,
+#     MathEntity,
+#     MathEntityRelated
+# )
+from mathematicon.backend.models.db_data_models import (
     DatabaseSentence,
     DatabaseText,
     Mathtag,
@@ -30,6 +42,15 @@ class DBHandler:
     def __del__(self):
         self.conn.close()
 
+    @contextmanager
+    def safe_execute(self):
+        try:
+            yield self.conn
+            self.conn.commit()
+        except sqlite3.IntegrityError as e:
+            self.conn.rollback()
+            print(f"Error during query execution: {e.__class__.__name__} - {str(e)}")
+
     @staticmethod
     def dict_factory(cursor: sqlite3.Cursor, row):
         fields = [column[0] for column in cursor.description]
@@ -41,9 +62,22 @@ class DBHandler:
 
 
 class UserDBHandler(DBHandler):
+    """
+    A subclass of DBHandler for handling user-related database operations.
+    """
 
     def get_user_by_uname(self,
-                          username: str):
+                          username: str) -> Optional[Dict[str, Any]]:
+        """
+        Retrieve user information by username.
+
+        Args:
+            username (str): The username to search for.
+
+        Returns:
+            Optional[Dict[str, Any]]: A dictionary containing user information if found, else None.
+
+        """
         cur = self.conn.execute('''
         SELECT * 
         FROM users
@@ -55,7 +89,20 @@ class UserDBHandler(DBHandler):
     def add_user(self,
                  username: str,
                  password: str,
-                 salt, email):
+                 salt: Any, email: str):
+        """
+        Add a new user to the database.
+
+        Args:
+            username (str): The username of the new user.
+            password (str): The password of the new user.
+            salt (Any): The salt used in password hashing.
+            email (str): The email address of the new user.
+
+        Returns:
+            None
+
+        """
         self.conn.execute('''
         INSERT INTO users (username, password, salt, email)
         VALUES (?, ?, ?, ?)''', (username, password, salt, email))
@@ -66,24 +113,59 @@ class UserDBHandler(DBHandler):
                  query: str,
                  query_type: int,
                  sent_id: int):
-        self.conn.execute(
-            '''INSERT or REPLACE INTO favourites (user_id, query, query_type, sent_id) 
-            VALUES (?, ?, ?, ?)
-            ''', (userid, query, query_type, sent_id)
-        )
-        self.conn.commit()
+        """
+        Add a favorite sentence for a user.
+
+        Args:
+            userid (int): The user ID.
+            query (str): Query string that was used to get selected sentence as a result
+            query_type (int): The type of the query. (text, formula or etc.)
+            sent_id (int): Sentence id from database.
+
+        Returns:
+            None
+
+        """
+        with self.safe_execute():
+            self.conn.execute(
+                """INSERT INTO favourites (user_id, query, query_type, sent_id) 
+                VALUES (?, ?, ?, ?)
+                """,
+                (userid, query, query_type, sent_id),
+            )
 
     def remove_fav(self,
                    userid: int,
                    sent_id: int):
-        self.conn.execute(
-            '''DELETE FROM favourites
-            WHERE user_id = (?) AND sent_id = (?)''', (userid, sent_id)
-        )
-        self.conn.commit()
+        """
+        Remove all entries of sentence in user favourites
+
+        Args:
+            userid (int): The user ID.
+            sent_id (int): Sentence ID.
+
+        Returns:
+            None
+
+        """
+        with self.safe_execute():
+            self.conn.execute(
+                '''DELETE FROM favourites
+                WHERE user_id = (?) AND sent_id = (?)''', (userid, sent_id)
+            )
 
     def _count_user_history(self,
-                            userid: int):
+                            userid: int) -> int:
+        """
+        Count the number of records in the user's history.
+
+        Args:
+            userid (int): The user ID.
+
+        Returns:
+            int: The count of records in the user's history.
+
+        """
         cur = self.conn.execute("""
         SELECT COUNT(*) 
         FROM user_history 
@@ -93,33 +175,67 @@ class UserDBHandler(DBHandler):
     def _delete_history(self,
                         userid: int,
                         n_oldest_records: int):
-        self.conn.execute('''
-        DELETE FROM user_history
-        WHERE rowid IN (
-        SELECT rowid
-        FROM user_history
-        WHERE user_id = ?
-        ORDER BY time
-        LIMIT ?
-        )
-        ''', (userid, n_oldest_records))
-        self.conn.commit()
+        """
+        Delete the oldest records from the user's history.
+
+        Args:
+           userid (int): The user ID.
+           n_oldest_records (int): The number of oldest records to delete.
+
+        Returns:
+           None
+
+        """
+        with self.safe_execute():
+            self.conn.execute('''
+            DELETE FROM user_history
+            WHERE rowid IN (
+            SELECT rowid
+            FROM user_history
+            WHERE user_id = ?
+            ORDER BY time
+            LIMIT ?
+            )
+            ''', (userid, n_oldest_records))
 
     def add_history(self,
                     userid: int,
                     query: str,
                     history_limit: int = 5):
-        current_count = self._count_user_history(userid)
-        if current_count >= history_limit:
-            self._delete_history(userid, current_count - history_limit + 1)
-        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        self.conn.execute("""
-        INSERT INTO user_history (user_id, query, time)
-        VALUES (?, ?, ?)""", (userid, query, current_time))
-        self.conn.commit()
+        """
+        Add a user's query to the history, maintaining a specified history limit.
+
+        Args:
+            userid (int): The user ID.
+            query (str): The user's query.
+            history_limit (int, optional): The maximum number of records to keep in the history.
+                Defaults to 5.
+
+        Returns:
+            None
+
+        """
+        with self.safe_execute():
+            current_count = self._count_user_history(userid)
+            if current_count >= history_limit:
+                self._delete_history(userid, current_count - history_limit + 1)
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            self.conn.execute("""
+            INSERT INTO user_history (user_id, query, time)
+            VALUES (?, ?, ?)""", (userid, query, current_time))
 
     def get_user_history(self,
-                         userid: int):
+                         userid: int) -> Iterable[str]:
+        """
+        Retrieve the user's query history.
+
+        Args:
+            userid (int): The user ID.
+
+        Returns:
+            Iterable[str]: A list of query strings in chronological order.
+
+        """
         cur = self.conn.execute("""
         SELECT query
         FROM user_history
@@ -691,15 +807,16 @@ class MathDBHandler(DBHandler):
         if commit:
             self.conn.commit()
 
-    def add_math_annotation(self, math_entity: MathEntity):
-        try:
-            math_ent_id = self.add_math_entity(math_entity, commit=False)
-            self.add_relations(math_ent_id, math_entity.related, commit=False)
-            self.conn.commit()
-        except sqlite3.Error as e:
-            print(e)
-            print(math_entity)
-            self.conn.rollback()
+    # def add_math_annotation(self, math_entity: MathEntity):
+    #     try:
+    #         math_ent_id = self.add_math_entity(math_entity, commit=False)
+    #         self.add_relations(math_ent_id, math_entity.related, commit=False)
+    #         self.conn.commit()
+    #     except sqlite3.Error as e:
+    #         print(e)
+    #         print(math_entity)
+    #         self.conn.rollback()
+
 
 
 class WebDBHandler(DBHandler):
@@ -782,4 +899,8 @@ class WebDBHandler(DBHandler):
         return cur.fetchall()
 
 
+if __name__ == '__main__':
+    from mathematicon import DB_PATH
 
+    db = UserDBHandler(DB_PATH)
+    db.add_favs(2, 'три', 'text_lemma', 510)
