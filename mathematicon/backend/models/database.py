@@ -5,27 +5,16 @@ from dataclasses import asdict
 from datetime import datetime
 from contextlib import contextmanager
 
-# from .db_data_models import (
-#     DatabaseSentence,
-#     DatabaseText,
-#     Mathtag,
-#     MathtagAttrs,
-#     DatabaseMorph,
-#     DatabaseMorphAnnotation,
-#     AnnotFrag,
-#     MathEntity,
-#     MathEntityRelated
-# )
-from mathematicon.backend.models.db_data_models import (
+from .db_data_models import (
     DatabaseSentence,
     DatabaseText,
     Mathtag,
     MathtagAttrs,
     DatabaseMorph,
-    DatabaseMorphAnnotation,
     AnnotFrag,
     MathEntity,
-    MathEntityRelated
+    MathEntityRelated,
+    DatabaseToken
 )
 
 
@@ -43,13 +32,19 @@ class DBHandler:
         self.conn.close()
 
     @contextmanager
-    def safe_execute(self):
+    def transaction(self, raise_exception: bool = False):
         try:
             yield self.conn
             self.conn.commit()
         except sqlite3.IntegrityError as e:
             self.conn.rollback()
-            print(f"Error during query execution: {e.__class__.__name__} - {str(e)}")
+            if raise_exception:
+                raise e
+            else:
+                print(f"Error during query execution: {e.__class__.__name__} - {str(e)}")
+        except Exception as e:
+            self.conn.close()
+            raise e
 
     @staticmethod
     def dict_factory(cursor: sqlite3.Cursor, row):
@@ -126,7 +121,7 @@ class UserDBHandler(DBHandler):
             None
 
         """
-        with self.safe_execute():
+        with self.transaction():
             self.conn.execute(
                 """INSERT INTO favourites (user_id, query, query_type, sent_id) 
                 VALUES (?, ?, ?, ?)
@@ -148,7 +143,7 @@ class UserDBHandler(DBHandler):
             None
 
         """
-        with self.safe_execute():
+        with self.transaction():
             self.conn.execute(
                 '''DELETE FROM favourites
                 WHERE user_id = (?) AND sent_id = (?)''', (userid, sent_id)
@@ -186,7 +181,7 @@ class UserDBHandler(DBHandler):
            None
 
         """
-        with self.safe_execute():
+        with self.transaction():
             self.conn.execute('''
             DELETE FROM user_history
             WHERE rowid IN (
@@ -215,7 +210,7 @@ class UserDBHandler(DBHandler):
             None
 
         """
-        with self.safe_execute():
+        with self.transaction():
             current_count = self._count_user_history(userid)
             if current_count >= history_limit:
                 self._delete_history(userid, current_count - history_limit + 1)
@@ -247,299 +242,235 @@ class UserDBHandler(DBHandler):
 
 class TextDBHandler(DBHandler):
 
-    def _add_math_branch(self, name: str, commit: bool = True):
-        """
-        Adds a new math branch to the database.
-    
-        Args:
-            name (str): The name of the math branch to be added.
-            commit (bool, optional): If True, commits the changes to the database. Default is True.
-        """
-        self.conn.execute(
-            """
-        INSERT or IGNORE INTO math_branches (name)
-        VALUES (?)""",
-            (name,),
-        )
-        if commit:
-            self.conn.commit()
+    def _get_math_branch_id(self, name: str) -> Optional[Tuple[int, ]]:
+        cur = self.conn.execute('''
+        SELECT id 
+        FROM math_branches
+        WHERE name = (?)''', (name,))
+        return cur.fetchone()
 
-    def _add_text_level(self, name: str, commit: bool = True):
-        """
-        Adds a new text difficulty level to the database.
-    
-        Args:
-            name (str): The name of the text difficulty level to be added.
-            commit (bool, optional): If True, commits the changes to the database. Default is True.
-        """
-        self.conn.execute(
-            """
-            INSERT or IGNORE INTO text_difficulty (name)
-            VALUES (?)""",
-            (name,),
-        )
-        if commit:
-            self.conn.commit()
+    def _add_math_branch(self, name: str, commit: bool = True) -> int:
+        math_branch_id = self._get_math_branch_id(name)
+        if not math_branch_id:
+            cur = self.conn.execute("""
+            INSERT or IGNORE INTO math_branches (name)
+            VALUES (?)
+            RETURNING id""", (name,))
+            math_branch_id = cur.fetchone()[0]
 
-    def add_text(self, text: DatabaseText):
-        """
-        Adds or updates a text entry in the database.
-    
-        Args:
-            text (DatabaseText): An instance of the DatabaseText class containing information about the text.
+            if commit:
+                self.conn.commit()
+        return math_branch_id[0]
 
-        Note:
-            This method performs the following actions:
-            1. Adds the math branch and text difficulty level to their respective tables if they do not already exist.
-            2. Inserts or updates the text entry in the 'texts' table based on the provided DatabaseText instance.
-        """
-        try:
-            self._add_math_branch(text.branch, commit=False)
-            self._add_text_level(text.level, commit=False)
-    
-            self.conn.execute(
+    def _get_text_level(self, name: str) -> Optional[Tuple[int, ]]:
+        cur = self.conn.execute("""
+        SELECT id 
+        FROM text_difficulty
+        WHERE name = (?)""", (name, ))
+        return cur.fetchone()
+
+    def _add_text_level(self, name: str, commit: bool = True) -> int:
+        text_level_id = self._get_text_level(name)
+        if not text_level_id:
+            cur = self.conn.execute(
                 """
-                INSERT INTO texts (title, filename, youtube_link, level_id, math_branch_id)
-                VALUES (
-                    :title, 
-                    :filename, 
-                    :yb_link, 
-                    (SELECT id FROM text_difficulty WHERE name = :level), 
-                    (SELECT id FROM math_branches WHERE name = :branch)
-                )
-                ON CONFLICT (filename)
-                DO UPDATE SET
-                    title = :title,
-                    youtube_link = :yb_link,
-                    level_id = (SELECT id FROM text_difficulty WHERE name = :level),
-                    math_branch_id = (SELECT id FROM math_branches WHERE name = :branch)
-                WHERE filename = :filename
-                """,
-                vars(text),
-            )
+                INSERT or IGNORE INTO text_difficulty (name)
+                VALUES (?)
+                RETURNING id""", (name, ))
+            text_level_id = cur.fetchone()
+
+            if commit:
+                self.conn.commit()
+        return text_level_id[0]
+
+    def add_text(self, text: DatabaseText, status: str = 'texts'):
+        with self.transaction():
+            math_branch_id = self._add_math_branch(text.branch, commit=False)
+            text_difficulty_id = self._add_text_level(text.level, commit=False)
+            self.conn.execute("""
+            INSERT INTO texts (title, filename, youtube_link, math_branch_id, level_id, status_id, timecode_start, timecode_end)
+            VALUES (
+            :title,
+            :filename, 
+            :yb_link,
+            :branch_id,
+            :level_id, 
+            :status,
+            :timecode_start, 
+            :timecode_end)
+            ON CONFLICT (filename)
+            DO UPDATE SET 
+            title = :title,
+            youtube_link = :yb_link,
+            level_id = :level_id,
+            math_branch_id = :branch_id,
+            timecode_start = :timecode_start,
+            timecode_end = :timecode_end""", vars(text) | {
+                'branch_id': math_branch_id, 'level_id': text_difficulty_id, 'status': status
+            })
+
+    def update_text_status(self,
+                           filename: str,
+                           new_status_name: str,
+                           commit: bool = True):
+        self.conn.execute("""
+        UPDATE texts
+        SET status_id = (SELECT id FROM annotation_status WHERE name = (?))
+        WHERE filename = (?)
+        """, (new_status_name, filename))
+
+        if commit:
             self.conn.commit()
-        except Exception as e:
-            self.conn.rollback()
-            print(e)
 
     def add_sentence(self,
-                     sentence: DatabaseSentence):
-        try:
-            self.conn.execute('''
+                     sentence: DatabaseSentence,
+                     status: str = 'sents'):
+        with self.transaction():
+            self.conn.execute("""
             INSERT INTO sents (text_id, sent, lemmatized, pos_in_text)
             VALUES (
             (SELECT id FROM texts WHERE filename = :filename), 
             :sent_text, 
             :lemmatized, 
-            :pos_in_text)
-            ''', vars(sentence))
-            self.conn.commit()
-        except sqlite3.IntegrityError as e:
-            self.conn.rollback()
-            print('This sentence is already in database')
+            :pos_in_text)""", vars(sentence))
+            self.update_text_status(sentence.filename, status)
 
-    # def get_text_sentences(self, text_filename: str) -> Iterable[Tuple[int, str]]:
-    #     ...
-    #
-    # def get_video_info(self, text_filename: str) -> Tuple[str, str, str]:
-    #     ...
+    def _get_lemma(self, lemma: str) -> Optional[Tuple[int,]]:
+        cur = self.conn.execute("""
+        SELECT id
+        FROM lemmas
+        WHERE name = (?)""", (lemma, ))
+        return cur.fetchone()
 
-    def _add_lemmas(self, lemmas: Iterable[Tuple[str,]], commit: bool = True):
-        """
-        Adds multiple lemma entries to the database.
-    
-        Args:
-            lemmas (Iterable[Tuple[str, ]]): An iterable of tuples containing lemma names to be added.
-            commit (bool, optional): If True, commits the changes to the database. Default is True.
-        """
-    
-        self.conn.executemany(
-            """
-            INSERT or IGNORE INTO lemmas (name)
-            VALUES (?)""",
-            lemmas,
-        )
-    
+    def _add_lemma(self,
+                   lemma: str,
+                   commit: bool = True) -> int:
+        lemma_id = self._get_lemma(lemma)
+        if not lemma_id:
+            cur = self.conn.execute("""
+            INSERT INTO lemmas (name)
+            VALUES (?)
+            RETURNING id""", (lemma,))
+            lemma_id = cur.fetchone()
+
+            if commit:
+                self.conn.commit()
+        return lemma_id[0]
+
+    def _get_pos_id(self, pos_tag: str) -> Optional[Tuple[int, ]]:
+        cur = self.conn.execute("""
+        SELECT id 
+        FROM pos
+        WHERE name = (?)""", (pos_tag, ))
+        return cur.fetchone()
+
+    def _add_pos(self,
+                 pos_tag: str,
+                 commit: bool = True) -> int:
+        pos_id = self._get_pos_id(pos_tag)
+        if not pos_id:
+            cur = self.conn.execute("""
+            INSERT INTO pos (name)
+            VALUES (?)
+            RETURNING id""", (pos_tag, ))
+            pos_id = cur.fetchone()
+
+            if commit:
+                self.conn.commit()
+        return pos_id[0]
+
+    def _get_morph_category_id(self,
+                            category: str) -> Optional[Tuple[int, ]]:
+        cur = self.conn.execute("""
+        SELECT id 
+        FROM morph_categories
+        WHERE name = (?)""", (category, ))
+        return cur.fetchone()
+
+    def _add_morph_category(self,
+                            category: str,
+                            commit: bool = True) -> int:
+        cat_id = self._get_morph_category_id(category)
+        if not cat_id:
+            cur = self.conn.execute("""
+            INSERT INTO morph_categories (name)
+            VALUES (?)
+            RETURNING id""", (category, ))
+            cat_id = cur.fetchone()
+
+            if commit:
+                self.conn.commit()
+        return cat_id[0]
+
+    def _get_morph_value_id(self,
+                            value: str) -> Optional[Tuple[int, ]]:
+        cur = self.conn.execute("""
+        SELECT id 
+        FROM morph_values
+        WHERE name = (?)""", (value, ))
+        return cur.fetchone()
+
+    def _add_morph_value(self,
+                         value: str,
+                         commit: bool = True) -> int:
+        val_id = self._get_morph_value_id(value)
+        if not val_id:
+            cur = self.conn.execute("""
+            INSERT INTO morph_values (name)
+            VALUES (?)
+            RETURNING id""", (value, ))
+            val_id = cur.fetchone()
+
+            if commit:
+                self.conn.commit()
+
+        return val_id[0]
+
+    def _add_token_morph(self,
+                         token_id: int,
+                         morph_annot: Iterable[DatabaseMorph],
+                         commit: bool = True):
+        for morph in morph_annot:
+            cat_id = self._add_morph_category(morph.category, commit=commit)
+            val_id = self._add_morph_value(morph.value, commit=commit)
+            self.conn.execute("""
+            INSERT or IGNORE INTO morph_features (token_id, category_id, value_id) 
+            VALUES (?, ?, ?)""", (token_id, cat_id, val_id))
+
         if commit:
             self.conn.commit()
 
-    def _add_poses(self, poses: Iterable[Tuple[str,]], commit: bool = True):
-        """
-        Adds multiple part-of-speech entries to the database.
-    
-        Args:
-            poses (Iterable[Tuple[str, ]]): An iterable of tuples containing part-of-speech names to be added.
-            commit (bool, optional): If True, commits the changes to the database. Default is True.
-        """
-        self.conn.executemany(
-            """
-            INSERT or IGNORE INTO pos (name)
-            VALUES (?)""",
-            poses,
-        )
-    
-        if commit:
-            self.conn.commit()
+    def _add_token_info(self,
+                        token: DatabaseToken,
+                        commit: bool = True):
+        pos_id = self._add_pos(token.pos, commit=commit)
+        lemma_id = self._add_lemma(token.lemma, commit=commit)
+        cur = self.conn.execute("""
+        INSERT INTO tokens (sent_id, token, whitespace, pos_in_sent, char_start, char_end, pos_id, lemma_id)
+        VALUES (
+        (SELECT sents.id FROM sents 
+        LEFT JOIN texts 
+        ON texts.id = sents.text_id 
+        WHERE texts.filename = :filename 
+        AND sents.pos_in_text = :sent_pos_in_text),
+        :token,
+        :whitespace, 
+        :pos_in_sent,
+        :char_start, 
+        :char_end,
+        :pos_id,
+        :lemma_id)
+        RETURNING id""", vars(token) | {'pos_id': pos_id, 'lemma_id': lemma_id})
+        token_id = cur.fetchone()[0]
+        self._add_token_morph(token_id, token.morph, commit=commit)
 
-    def get_sentence_tokens_id(self, sentence: DatabaseSentence):
-        """
-        Retrieves the token IDs of a specific sentence in the database.
-    
-        Args:
-            sentence (DatabaseSentence): An instance of the DatabaseSentence class representing the target sentence.
-    
-        Returns:
-            List[int]: A list of token IDs corresponding to the tokens in the specified sentence.
-        """
-        cur = self.conn.execute(
-            """
-            SELECT tokens.id
-            FROM tokens
-            LEFT JOIN sents
-            ON sents.id = tokens.sent_id
-            LEFT JOIN texts
-            ON sents.text_id = texts.id
-            WHERE texts.filename = :filename
-            AND sents.pos_in_text = :pos_in_text
-            ORDER BY tokens.pos_in_sent""",
-            vars(sentence),
-        )
-        cur.row_factory = self.one_column_factory
-        token_ids = cur.fetchall()
-        return token_ids
-
-    @staticmethod
-    def _create_sentence_morph_info(
-        token_ids: Iterable[int], sentence: DatabaseSentence
-    ) -> Iterable[DatabaseMorphAnnotation]:
-        """
-        Creates a list of morphological annotations for tokens in a sentence.
-    
-        Args:
-            token_ids (Iterable[int]): An iterable of token IDs corresponding to the tokens in the sentence.
-            sentence (DatabaseSentence): An instance of the DatabaseSentence class representing the target sentence.
-    
-        Returns:
-            Iterable[DatabaseMorphAnnotation]: A list of DatabaseMorphAnnotation instances representing morphological annotations
-            for the tokens in the specified sentence.
-        """
-        morph_info = []
-        for i, t in zip(token_ids, sentence):
-            morph_info.extend(
-                [
-                    DatabaseMorphAnnotation(token_id=i, category=m.category, value=m.value)
-                    for m in t["morph"]
-                ]
-            )
-        return morph_info
-
-    def _add_morph_categories(self, morph: Iterable[DatabaseMorph], commit: bool = True):
-        """
-        Adds morphological categories to the database if they do not already exist in databse.
-    
-        Args:
-            morph (Iterable[DatabaseMorph]): An iterable of DatabaseMorph instances containing morphological category information.
-            commit (bool, optional): If True, commits the changes to the database. Default is True.
-        """
-        self.conn.executemany(
-            """
-            INSERT or IGNORE INTO morph_categories (name)
-            VALUES (:category)
-            """,
-            (asdict(m) for m in morph),
-        )
-    
-        if commit:
-            self.conn.commit()
-
-    def _add_morph_values(self, morph: Iterable[DatabaseMorph], commit: bool = True):
-        """
-        Adds morphological values to the database if they do not exist.
-    
-        Args:
-            morph (Iterable[DatabaseMorph]): An iterable of DatabaseMorph instances containing morphological value information.
-            commit (bool, optional): If True, commits the changes to the database. Default is True.
-        """
-        self.conn.executemany(
-            """
-            INSERT or IGNORE INTO morph_values (name)
-            VALUES (:value)
-            """,
-            (asdict(m) for m in morph),
-        )
-    
-        if commit:
-            self.conn.commit()
-
-    def _add_sentence_morph(self, sentence: DatabaseSentence, commit: bool = True):
-        """
-        Adds morphological features for tokens in a sentence to the database.
-    
-        Args:
-            sentence (DatabaseSentence): An instance of the DatabaseSentence class representing the target sentence.
-            commit (bool, optional): If True, commits the changes to the database. Default is True.
-        """
-        token_ids = self.get_sentence_tokens_id(sentence)
-        morph_info = self._create_sentence_morph_info(token_ids, sentence)
-        self._add_morph_categories(morph_info, commit=commit)
-        self._add_morph_values(morph_info, commit=commit)
-        self.conn.executemany(
-            """
-                INSERT INTO morph_features (token_id, category_id, value_id)
-                VALUES (
-                :token_id, 
-                (SELECT id FROM morph_categories WHERE name = :category), 
-                (SELECT id FROM morph_values WHERE name = :value))
-                """,
-            (asdict(m) for m in morph_info),
-        )
-    
         if commit:
             self.conn.commit()
 
     def add_sentence_tokens(self, sentence: DatabaseSentence):
-        """
-        Adds records about tokens for a given sentence to the database.
-    
-        Args:
-            sentence (DatabaseSentence): An instance of the DatabaseSentence class representing the target sentence.
-
-        Note:
-            This method adds records about tokens, including information about lemmas, poses, and morphological features,
-            to the 'tokens', 'lemmas', 'pos', and 'morph_features' tables in the database.
-        """
-        try:
-            lemmas = sentence.tokens_attr("lemma_", "tuple")
-            poses = sentence.tokens_attr("tag_", "tuple")
-            tokens_info = iter(sentence)
-            self._add_lemmas(lemmas, commit=False)
-            self._add_poses(poses, commit=False)
-            self.conn.executemany(
-                """
-            INSERT INTO tokens (sent_id, token, whitespace, pos_in_sent, char_start, char_end, pos_id, lemma_id)
-            VALUES (
-            (SELECT sents.id FROM sents 
-            LEFT JOIN texts 
-            ON texts.id = sents.text_id 
-            WHERE texts.filename = :filename 
-            AND sents.pos_in_text = :sent_pos_in_text),
-            :token,
-            :whitespace, 
-            :pos_in_sent,
-            :char_start, 
-            :char_end,
-            (SELECT id FROM pos WHERE name = :pos),
-            (SELECT id FROM lemmas WHERE name = :lemma))""",
-                tokens_info,
-            )
-    
-            self._add_sentence_morph(sentence, commit=False)
-            self.conn.commit()
-        except sqlite3.IntegrityError as e:
-            self.conn.rollback()
-            print(
-                "This tokens are already in the database. If you want to update, use update_sentence_tokens_info"
-            )
+        with self.transaction():
+            for token in sentence:
+                self._add_token_info(token, commit=False)
 
     def _delete_morph_annot(self, token_ids: Iterable[int], commit: bool = True):
         """

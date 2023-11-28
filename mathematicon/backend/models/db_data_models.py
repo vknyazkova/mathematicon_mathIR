@@ -10,11 +10,6 @@ class DatabaseMorph:
     value: str
 
 
-@dataclass
-class DatabaseMorphAnnotation(DatabaseMorph):
-    token_id: int
-
-
 class DatabaseToken:
     def __init__(self,
                  spacy_token: Token,
@@ -43,7 +38,10 @@ class DatabaseText:
                  title: str = None,
                  yb_link: str = None,
                  branch: str = None,
-                 level: str = None):
+                 level: str = None,
+                 timecode_start: str = None,
+                 timecode_end: str = None):
+
         self._sentences = sentences
 
         self.filename = filename
@@ -51,6 +49,8 @@ class DatabaseText:
         self.yb_link = yb_link
         self.branch = branch
         self.level = level
+        self.timecode_start = timecode_start
+        self.timecode_end = timecode_end
 
     def __iter__(self):
         for i, sent in enumerate(self._sentences.sents, start=1):
@@ -106,7 +106,7 @@ class DatabaseSentence:
                                   char_end=char_end + 1,
                                   filename=self.filename,
                                   sent_pos_in_text=self.pos_in_text)
-            yield vars(token)
+            yield token
             char_cur = char_end + len(t.whitespace_)
 
 

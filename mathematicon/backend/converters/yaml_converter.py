@@ -75,7 +75,7 @@ class YamlConverter:
                     nlp: Language,
                     db: TextDBHandler):
         for file, info in self.yaml_contents.items():
-            db_text_info = {k: v for k, v in info.items() if k not in ['timecode_start', 'timecode_end', 'text']}
+            db_text_info = {k: v for k, v in info.items() if k not in ['text']}
             doc = nlp(info['text'])
             db_text = DatabaseText(doc, filename=file.stem, **db_text_info)
             db.add_text(db_text)
