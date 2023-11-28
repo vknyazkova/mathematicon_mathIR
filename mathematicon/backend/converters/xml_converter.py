@@ -240,12 +240,21 @@ class XMLConverter:
         self.sents = self._get_sents_info()
         self.math_entities = self.get_math_entities()
 
+    def to_database(self,
+                    db: MathDBHandler):
+        for math_ent in self.math_entities:
+            db.add_math_annotation(math_ent)
+
 
 if __name__ == '__main__':
     xml_conv = XMLConverter(BASE_PREFIX, MATH_ENTITY_LAYER, LINK_FEATURES)
     filepath = input('Enter path to annotation file: ')
     xml_conv.parse_annotation(filepath)
-    xml_conv.pprint_math_entities()
+    # xml_conv.pprint_math_entities()
+
+    from mathematicon import DB_PATH
+    db = MathDBHandler(DB_PATH)
+    xml_conv.to_database(db)
 
 
 

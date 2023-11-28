@@ -10,7 +10,11 @@ from .db_data_models import (
     Mathtag,
     MathtagAttrs,
     DatabaseMorph,
-    DatabaseMorphAnnotation)
+    DatabaseMorphAnnotation,
+    AnnotFrag,
+    MathEntity,
+    MathEntityRelated
+)
 
 
 class DBHandler:
@@ -601,6 +605,101 @@ class MathDBHandler(DBHandler):
             self.conn.rollback()
             print(e)
 
+    def _get_annot_frag_id(self, annot_frag: AnnotFrag) -> Tuple[int, ]:
+        cur = self.conn.execute('''
+                SELECT annot_fragment.id
+                FROM annot_fragment
+                LEFT JOIN sents
+                ON annot_fragment.sent_id = sents.id
+                LEFT JOIN texts
+                ON sents.text_id = texts.id
+                WHERE sents.pos_in_text = :sent_idx 
+                AND texts.filename = :filename
+                AND annot_fragment.char_start = :char_start
+                AND annot_fragment.char_end = :char_end''', vars(annot_frag))
+        return cur.fetchone()
+
+    def _add_annot_frag(self, annot_frag: AnnotFrag,
+                        commit: bool = True) -> int:
+        cur = self.conn.execute('''
+        INSERT or IGNORE INTO annot_fragment (sent_id, char_start, char_end) 
+        VALUES (
+        (SELECT sents.id FROM sents LEFT JOIN texts ON sents.text_id = texts.id 
+        WHERE sents.pos_in_text = :sent_idx AND texts.filename = :filename),
+        :char_start,
+        :char_end)
+        RETURNING annot_fragment.id''', vars(annot_frag))
+
+        annot_frag_id = cur.fetchone()
+        if not annot_frag_id:
+            annot_frag_id = self._get_annot_frag_id(annot_frag)
+        if commit:
+            self.conn.commit()
+        return annot_frag_id[0]
+
+    def _get_math_entity_id(self, math_ent: MathEntity) -> Tuple[int, ]:
+        cur = self.conn.execute('''
+        SELECT math_entities.id
+        FROM math_entities
+        JOIN annot_fragment
+        ON math_entities.frag_id = annot_fragment.id
+        JOIN sents 
+        ON annot_fragment.sent_id = sents.id
+        JOIN texts
+        ON sents.text_id = texts.id
+        WHERE texts.filename = :filename
+        AND sents.pos_in_text = :sent_idx
+        AND annot_fragment.char_start = :char_start
+        AND annot_fragment.char_end = :char_end''', vars(math_ent))
+
+        return cur.fetchone()
+
+    def add_math_entity(self, math_ent: MathEntity,
+                        commit: bool = True) -> int:
+        annot_frag_id = self._add_annot_frag(math_ent, commit=commit)
+        cur = self.conn.execute('''
+        INSERT or IGNORE INTO math_entities (frag_id, math_tag_id, name) 
+        VALUES (
+        :frag_id,
+        (SELECT id FROM math_tags WHERE inception_id = :inception_id),
+        :name
+        )
+        RETURNING math_entities.id''', vars(math_ent) | {'frag_id': annot_frag_id})
+        math_ent_id = cur.fetchone()
+        if not math_ent_id:
+            self._get_math_entity_id(math_ent)
+        if commit:
+            self.conn.commit()
+        return math_ent_id[0]
+
+    def add_relations(self,
+                      math_entity_id: int,
+                      math_entity_related: Iterable[MathEntityRelated],
+                      commit: bool = True):
+        for rel in math_entity_related:
+            frag_id = self._add_annot_frag(rel.fragment, commit=commit)
+            self.conn.execute('''
+            INSERT or IGNORE INTO math_annotation (annot_frag_id, math_ent_id, role_id) 
+            VALUES (
+            :frag_id, 
+            :math_ent_id, 
+            (SELECT id FROM math_roles WHERE role = :role))''', {
+                'frag_id': frag_id,
+                'math_ent_id': math_entity_id,
+                'role': rel.role
+            })
+        if commit:
+            self.conn.commit()
+
+    def add_math_annotation(self, math_entity: MathEntity):
+        try:
+            math_ent_id = self.add_math_entity(math_entity, commit=False)
+            self.add_relations(math_ent_id, math_entity.related, commit=False)
+            self.conn.commit()
+        except sqlite3.Error as e:
+            print(e)
+            print(math_entity)
+            self.conn.rollback()
 
 
 class WebDBHandler(DBHandler):
