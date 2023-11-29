@@ -142,34 +142,33 @@
             </div>
           </header>
         </div>
-        <form action="/result_{{main_lan}}" method="GET" name="form" class="result-container01">
-          <h1 class="result-text">
-            <span data-ru="Поиск" data-en="Search"></span>
-            <br />
-          </h1>
-          <!-- пока не подключено -->
-          <div class="search-container-radios">
-                <div class="search-container-radio">
-                  <input type="radio" id="pink-radio" name="query_type" value="text" checked="checked" required="required" class="home-radiobutton"/>
-                  <span class="radio-text">
-                    <span data-en="By text" data-ru="По словам"></span>
-                    <br />
-                  </span>
+        <form action="/result_{{main_lan}}" method="get" name="form" class="search-search-res">
+            <div class="search-container">
+              <div class="search-container-res">
+                <div class="search-container1-res">
+                  <input
+                    required=""
+                    type="text"
+                    placeholder="search"
+                    class="search-textinput input"
+                    name="query"
+                    value=""
+                  />
+                  <select required="" name="query_type" class="search-select">
+                    <option value="text" selected="" data-en="by text" data-ru="по тексту"></option>
+                    <option value="formula" data-en="by formula"  data-ru="по формуле" disabled></option>
+                  </select>
+                  <select required="" name="search_type" class="search-select1">
+                    <option value="lemma" selected="" data-en="word search"  data-ru="обычный поиск"></option>
+                    <option value="word" data-en="exact form search" data-ru="точный поиск"></option>
+                  </select>
                 </div>
-                <div class="search-container-radio">
-                  <input type="radio" id="pink-radio" name="query_type" value="formula" required="required"/>
-                  <span class="radio-text" data-en="By formula" data-ru="По формуле"></span>
-                </div>
+                <button type="submit" class="search-button button">
+                  <span data-en="Search" data-ru="Поиск"></span>
+                </button>
               </div>
-          <input name="query" required="" type="text" class="result-textinput input" />
-          <button type="submit" class="result-button button">
-            <svg viewBox="0 0 950.8571428571428 1024" class="result-icon">
-              <path
-                d="M658.286 475.429c0-141.143-114.857-256-256-256s-256 114.857-256 256 114.857 256 256 256 256-114.857 256-256zM950.857 950.857c0 40-33.143 73.143-73.143 73.143-19.429 0-38.286-8-51.429-21.714l-196-195.429c-66.857 46.286-146.857 70.857-228 70.857-222.286 0-402.286-180-402.286-402.286s180-402.286 402.286-402.286 402.286 180 402.286 402.286c0 81.143-24.571 161.143-70.857 228l196 196c13.143 13.143 21.143 32 21.143 51.429z"
-              ></path>
-            </svg>
-          </button>
-        </form>
+            </div>
+          </form>
         <div class="result-container02">
           <h2 class="result-text03" data-ru="Результаты для:" data-en="Results for:"></h2>
           <div class="result-container03">
@@ -323,8 +322,6 @@ $(".switchlang").click(function() {
     </script>
   <script>
     $(".plus").click(function(){
-    var starring = {{starring}};
-    disableButtons(starring);
       $(this).toggleClass("minus")  ;
     })
   </script>
@@ -372,17 +369,16 @@ $(".switchlang").click(function() {
         });
     }
   </script>
-  <script>
-    function disableButtons(starring) {
-  if (!starring) {
-    var buttons = document.getElementsByClassName("plus");
+    <script>
+    if (!{{starring}}) {
+      var buttons = document.getElementsByClassName("plus");
+      console.log(buttons);
 
-    for (var i = 0; i < buttons.length; i++) {
-      buttons[i].disabled = true;
-      buttons[i].setAttribute("title", "No support");
+      for (var i = 0; i < buttons.length; i++) {
+        buttons[i].setAttribute("disabled","true");
+        buttons[i].setAttribute("title", "Log in first || Сначала войдите");
+      }
     }
-  }
-}
   </script>
   </body>
 </html>

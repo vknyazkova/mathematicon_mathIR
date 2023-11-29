@@ -517,3 +517,33 @@
 .green {
   color: #28b9b9;
 }
+.search-button {
+  margin: 0 0 0 auto;
+}
+
+.search-container-res {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.search-container1-res {
+  width: 90%;
+  display: flex;
+  align-items: center;
+  border-radius: var(--dl-radius-radius-radius4);
+  flex-direction: row;
+  justify-content: flex-end;
+  background-color: var(--dl-color-gray-white);
+}
+.search-search-res {
+  width: 70%;
+  height: 165px;
+  display: flex;
+  position: relative;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+}
