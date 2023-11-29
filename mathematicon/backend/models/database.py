@@ -335,7 +335,7 @@ class TextDBHandler(DBHandler):
             :pos_in_text)""", vars(sentence))
             self.update_text_status(sentence.filename, status)
 
-    def _get_lemma(self, lemma: str) -> Optional[Tuple[int,]]:
+    def _get_lemma_id(self, lemma: str) -> Optional[Tuple[int,]]:
         cur = self.conn.execute("""
         SELECT id
         FROM lemmas
@@ -345,7 +345,7 @@ class TextDBHandler(DBHandler):
     def _add_lemma(self,
                    lemma: str,
                    commit: bool = True) -> int:
-        lemma_id = self._get_lemma(lemma)
+        lemma_id = self._get_lemma_id(lemma)
         if not lemma_id:
             cur = self.conn.execute("""
             INSERT INTO lemmas (name)
@@ -472,74 +472,60 @@ class TextDBHandler(DBHandler):
             for token in sentence:
                 self._add_token_info(token, commit=False)
 
-    def _delete_morph_annot(self, token_ids: Iterable[int], commit: bool = True):
-        """
-        Deletes morphological annotations for tokens with the specified IDs from the database.
-    
-        Args:
-            token_ids (Iterable[int]): An iterable of token IDs for which morphological annotations will be deleted.
-            commit (bool, optional): If True, commits the changes to the database. Default is True.
-        """
-        self.conn.executemany(
-            """
+    def _del_token_morph(self,
+                         token_id: int,
+                         commit: bool = True):
+        self.conn.execute("""
         DELETE FROM morph_features
-        WHERE token_id = (?)""",
-            ((i,) for i in token_ids),
-        )
-        if commit:
-            self.conn.commit()
-    
-    def _update_sentence_morph(self, sentence: DatabaseSentence, commit: bool = True):
-        """
-        Updates morphological features for tokens in a sentence in the database.
-    
-        Args:
-            sentence (DatabaseSentence): An instance of the DatabaseSentence class representing the target sentence.
-            commit (bool, optional): If True, commits the changes to the database. Default is True.
-        """
-        token_ids = self.get_sentence_tokens_id(sentence)
-        morph_info = self._create_sentence_morph_info(token_ids, sentence)
-    
-        self._add_morph_categories(morph_info, commit=commit)
-        self._add_morph_values(morph_info, commit=commit)
-    
-        self._delete_morph_annot(token_ids, commit=commit)
-        self._add_sentence_morph(sentence, commit=commit)
-    
+        WHERE token_id = (?)""", (token_id, ))
+
         if commit:
             self.conn.commit()
 
-    def update_sentence_tokens_info(self, sentence: DatabaseSentence):
-        """
-        Updates information about tokens in a sentence in the database.
-    
-        Args:
-            sentence (DatabaseSentence): An instance of the DatabaseSentence class representing the target sentence.
-        """
-        try:
-            lemmas = sentence.tokens_attr("lemma_", "tuple")
-            poses = sentence.tokens_attr("tag_", "tuple")
-            self._add_lemmas(lemmas, commit=False)
-            self._add_poses(poses, commit=False)
-            self._update_sentence_morph(sentence, commit=False)
-            self.conn.executemany(
-                """
-                    UPDATE tokens
-                    SET 
-                    lemma_id = (SELECT id FROM lemmas WHERE name = :lemma),
-                    pos_id = (SELECT id FROM pos WHERE name = :pos)
-                    WHERE sent_id = (SELECT sents.id FROM sents 
-                    LEFT JOIN texts 
-                    ON texts.id = sents.text_id 
-                    WHERE texts.filename = :filename 
-                    AND sents.pos_in_text = :sent_pos_in_text)
-                    AND pos_in_sent = :pos_in_sent""",
-                iter(sentence),
-            )
+    def _get_token_id(self,
+                      token: DatabaseToken):
+        cur = self.conn.execute("""
+        SELECT tokens.id
+        FROM tokens
+        LEFT JOIN sents
+        ON tokens.sent_id = sents.id
+        LEFT JOIN texts
+        ON sents.text_id = texts.id
+        WHERE texts.filename = :filename
+        AND sents.pos_in_text = :sent_pos_in_text
+        AND tokens.pos_in_sent = :pos_in_sent""", vars(token))
+
+        return cur.fetchone()[0]
+
+    def _update_token_morph(self,
+                            token_id: int,
+                            token_morph: Iterable[DatabaseMorph],
+                            commit: bool = True):
+        self._del_token_morph(token_id, commit=commit)
+        self._add_token_morph(token_id, token_morph, commit=commit)
+
+    def _update_token_info(self,
+                           token: DatabaseToken,
+                           commit: bool = True):
+        token_id = self._get_token_id(token)
+        lemma_id = self._get_lemma_id(token.lemma)[0]
+        pos_id = self._get_pos_id(token.pos)[0]
+        self._update_token_morph(token_id, token.morph, commit=commit)
+        self.conn.execute("""
+        UPDATE tokens
+        SET 
+        lemma_id = (?),
+        pos_id = (?)
+        WHERE id = (?)""", (lemma_id, pos_id, token_id))
+
+        if commit:
             self.conn.commit()
-        except Exception as e:
-            self.conn.rollback()
-            print(e)
+
+    def update_sentence_grammar_annotation(self,
+                                           sentence: DatabaseSentence):
+        with self.transaction():
+            for token in sentence:
+                self._update_token_info(token, commit=False)
 
 
 class MathDBHandler(DBHandler):

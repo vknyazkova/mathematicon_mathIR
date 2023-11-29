@@ -94,7 +94,7 @@ def update_ud_annot(conllu_file: Union[str, os.PathLike],
     conllu_nlp = ConllParser(nlp)
     conllu_doc = conllu_nlp.parse_conll_file_as_spacy(conllu_file)
     for sent in DatabaseText(conllu_doc, filename=filename):
-        db.update_sentence_tokens_info(sent)
+        db.update_sentence_grammar_annotation(sent)
 
 
 if __name__ == '__main__':
