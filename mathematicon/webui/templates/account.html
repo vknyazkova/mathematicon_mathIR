@@ -155,7 +155,8 @@
             <a class="account-sett menu-acc" data-ru="Настройки" data-en="Settings" onclick="show_container('settings')"></a>
             <a class="account-star menu-acc" data-ru="Избранное" data-en="Starred" onclick="show_container('starred')"></a>
             <a class="account-hist menu-acc" data-ru="История" data-en="History" onclick="show_container('history')"></a>
-            <a class="account-test menu-acc" data-ru="Тесты" data-en="Tests" onclick="show_container('tests')"></a>
+            <!-- <a class="account-test menu-acc" data-ru="Тесты" data-en="Tests" onclick="show_container('tests')"></a> -->
+            <a class="account-test menu-acc" data-ru="Тесты" data-en="Tests" style="color: grey"></a>
           </div>
           <div class="account-container1">
             <div id="settings" class="account-container-settings hide">
@@ -185,30 +186,30 @@
             </div>
             <div id="starred" class="account-container-starred hide">
               <div class="account-container3">
+                {for search in search_list}
                 <div class="account-starred-line">
-                  <span class="account-starred-query">Text</span>
-                  <div class="account-starred-bubble">
+                  <div class="text-arrow">
+                    <a class="account-starred-query" href="#">Text</a>
+                    <button id="{{id}}" class="arrow up" onclick="show_example(this.id)"></button>
+                  </div>
+                  <div id="example-{{id}}" class="account-starred-bubble">
                     <p class="account-text04">
-                      Да, если вы знаете, что икс плюс дельта икс четвертой
-                      степени это икс в четвертой плюс четыре икс в кубе дельта
-                      икс плюс шесть икс квадрат дельта икс квадрат плюс четыре
-                      икс дельта икс куб плюс дельта икс в четыре, да, то точно
-                      так же вы сразу получаете, что икс в четыре штрих равно
-                      четыре икс куб.
+                      {{text}}
                     </p>
                     <div class="account-container4">
-                      <button id="test" class="account-icon plus minus" onclick="send_id(this.id)"></button>
+                      <button id="{{id}}" class="account-icon plus minus" onclick="send_id(this.id)"></button>
                     </div>
                   </div>
                 </div>
+                {{endfor}}
               </div>
             </div>
             <div id="history" class="account-container-history hide">
-                <div class="account-container5">
-                  {% for item in history_list %}
-                    <a href="/result_{{ main_lan }}?{{ item[1] }}" class="account-history-query">{{ item[0] }}</a>
-                  {% endfor %}
-                </div>
+              {% for item in history_list %}
+              <div class="account-container5">
+                <a href="/result_{{ main_lan }}?{{ item[1] }}" class="account-history-query">{{ item[0] }}</a>
+              </div>
+              {% endfor %}
             </div>
             <div id="tests" class="account-container-tests hide">
               <h1>
@@ -271,6 +272,23 @@ $(".switchlang").click(function() {
       $(this).toggleClass("minus")  ;
     })
   </script>
+    <script>
+      $(".up").click(function(){
+      $(this).toggleClass("down")  ;
+    })
+    </script>
+    <script>
+      function show_example(clicked_id){
+        var id = "example-" + clicked_id;
+        var element = document.getElementById(id);
+        console.log(element)
+        if (element.style.display === "flex") {
+          element.style.display = "none";
+        } else {
+          element.style.display = "flex";
+        };
+      }
+    </script>
   <script>
     function send_id(clicked_id) {
       var element = document.getElementById(clicked_id);
@@ -290,14 +308,12 @@ $(".switchlang").click(function() {
   </script>
   <script>
     function show_container(text){
-    console.log(text);
       var containers = document.getElementsByClassName("hide");
       for(var i = 0; i < containers.length; i++){
           containers[i].style.display = "none";
       };
       var current_container = document.getElementById(text);
       current_container.style.display = "flex";
-
     }
   </script>
   </body>
