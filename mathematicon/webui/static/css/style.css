@@ -509,9 +509,6 @@
 .first-link {
 margin-left: 0;
 }
-input[type=radio]#pink-radio {
-            accent-color: #ba7fc1ff;
-        }
 textarea:focus, input:focus{
     outline: none;
 }
@@ -531,9 +528,6 @@ textarea:focus, input:focus{
   width: 20px;
   cursor: pointer;
 }
-.search-container{
-  width: 100%
-}
 
 .search-search {
   width: 70%;
@@ -545,27 +539,9 @@ textarea:focus, input:focus{
   flex-direction: column;
   justify-content: center;
 }
-.search-container {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  flex-direction: column;
-  justify-content: center;
-}
-.search-container1 {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  border-color: var(--dl-color-site-darkcyan);
-  border-width: 1px;
-  border-radius: var(--dl-radius-radius-radius4);
-  flex-direction: row;
-  justify-content: flex-end;
-  background-color: var(--dl-color-gray-white);
-}
 .search-textinput {
   width: 100%;
-  height: 50px;
+  height: 48px;
   border-width: 0px;
   border-radius: 0px;
   background-color: transparent;
@@ -594,12 +570,14 @@ textarea:focus, input:focus{
 }
 .search-button {
   width: 93px;
-  height: 37px;
+  height: 100%;
   align-self: center;
-  margin-top: var(--dl-space-space-twounits);
+  margin: 0;
   transition: 0.3s;
   border-width: 0px;
   background-color: var(--dl-color-site-lightpp);
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
 }
 .search-button:hover {
   border: none;

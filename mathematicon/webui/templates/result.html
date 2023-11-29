@@ -154,7 +154,7 @@
           </header>
         </div>
         <form action="/result_{{main_lan}}" method="get" name="form" class="search-search-res">
-            <div class="search-container">
+
               <div class="search-container-res">
                 <div class="search-container1-res">
                   <input
@@ -165,27 +165,23 @@
                     name="query"
                     value=""
                   />
-                  <select required="" name="query_type" class="search-select">
-                    <option value="text" selected="" data-en="by text" data-ru="по тексту"></option>
-                    <option value="formula" data-en="by formula"  data-ru="по формуле" disabled></option>
-                  </select>
                   <select required="" name="search_type" class="search-select1">
                     <option value="lemma" selected="" data-en="word search"  data-ru="обычный поиск"></option>
-                    <option value="word" data-en="exact form search" data-ru="точный поиск"></option>
+                    <option value="word" data-en="exact form search" data-ru="точный поиск" disabled></option>
                   </select>
                 </div>
                 <button type="submit" class="search-button button">
                   <span data-en="Search" data-ru="Поиск"></span>
                 </button>
               </div>
-            </div>
+
           </form>
         <div class="result-container02">
           <h2 class="result-text03" data-ru="Результаты для:" data-en="Results for:"></h2>
           <div class="result-container03">
             <h3 class="result-text04">
               {% for word in query_info.tokens %}
-                 <span class="pink">{{word.text}} </span>
+                 <span class="{{word.color}}">{{word.text}} </span>
               {%endfor%}
             </h3>
             <a class="result-icon02" onclick="makeSound()"><img src="static/images/speaker.png" width="auto" height="20px"></a>

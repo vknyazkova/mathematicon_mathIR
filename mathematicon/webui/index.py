@@ -34,7 +34,7 @@ def result(lang):
     else:
         userid = None
         starring = "false"
-    if request.args['query_type'] == 'text':
+    if request.args['query']:
         search_type = request.args.get('search_type', 'lemma')
         query_info, sents_info = text_search.search(query, userid, search_type)
     elif request.args['query_type'] == 'formula':
