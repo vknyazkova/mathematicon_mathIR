@@ -59,11 +59,20 @@
               class="navbar-interactive-desktop-menu"
             >
               <nav class="navbar-interactive-links">
-                <a class="nav-links first-link" href="/main_{{main_lan}}"><span data-ru="Главная" data-en="Main"></span></a>
-                <a class="nav-links" href="/dictionary_{{main_lan}}"><span data-ru="Словарь" data-en="Dictionary"></span></a>
-                <a class="navbar-interactive-text02 nav-links" href="/check_{{main_lan}}">
+                <a class="nav-links first-link" href="/main_{{main_lan}}">
+                  <span data-ru="Главная" data-en="Main"></span>
+                </a>
+                <!--
+                <a class="nav-links" href="/dictionary_{{main_lan}}">
+                <span data-ru="Словарь" data-en="Dictionary"></span>
+                </a>
+                -->
+                <a class="nav-links"><span data-ru="Словарь" data-en="Dictionary" style="color: gray"></span></a>
+                <!-- <a class="navbar-interactive-text02 nav-links" href="/check_{{main_lan}}">
                   <span data-ru="Тесты" data-en="Check knowledge"></span>
                 </a>
+                 -->
+                <a class="navbar-interactive-text02 nav-links"><span data-ru="Тесты" data-en="Check knowledge" style="color: gray"></span></a>
                 <a class="navbar-interactive-text03 nav-links" href="/account_{{main_lan}}">
                   <span data-ru="Личный кабинет" data-en="Account"></span>
                   <br />
@@ -111,13 +120,15 @@
                     <a href="/main_{{main_lan}}" data-ru="Главная" data-en="Main"></a>
                   </span>
                   <span class="navbar-interactive-text11">
-                    <a href="/dictionary_{{main_lan}}" data-ru="Словарь" data-en="Dictionary"></a>
+                    <!-- <a href="/dictionary_{{main_lan}}" data-ru="Словарь" data-en="Dictionary"></a> -->
+                    <span data-ru="Словарь" data-en="Dictionary" style="color: gray"></span>
                   </span>
                   <span class="navbar-interactive-text12">
-                    <a  href="/check_{{main_lan}}" data-ru="Тесты" data-en="Check knowledge"></a>
+                    <!-- <a  href="/check_{{main_lan}}" data-ru="Тесты" data-en="Check knowledge"></a> -->
+                    <span data-ru="Тесты" data-en="Check knowledge" style="color: gray"></span>
                   </span>
                   <span class="navbar-interactive-text13" >
-                    <a  data-ru="Личный кабинет" data-en="Account"></a>
+                    <a href="/account_{{main_lan}}" data-ru="Личный кабинет" data-en="Account"></a>
                   </span>
                   <span class="navbar-interactive-text14">
                     <a href="/help_{{main_lan}}" data-ru="Помощь" data-en="Help"></a>
