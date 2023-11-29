@@ -323,6 +323,8 @@ $(".switchlang").click(function() {
     </script>
   <script>
     $(".plus").click(function(){
+    var starring = {{starring}};
+    disableButtons(starring);
       $(this).toggleClass("minus")  ;
     })
   </script>
@@ -369,6 +371,18 @@ $(".switchlang").click(function() {
             body: JSON.stringify(data)
         });
     }
+  </script>
+  <script>
+    function disableButtons(starring) {
+  if (!starring) {
+    var buttons = document.getElementsByClassName("plus");
+
+    for (var i = 0; i < buttons.length; i++) {
+      buttons[i].disabled = true;
+      buttons[i].setAttribute("title", "No support");
+    }
+  }
+}
   </script>
   </body>
 </html>

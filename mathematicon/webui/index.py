@@ -30,8 +30,10 @@ def result(lang):
         userid = current_user.id
         query_string = unquote(request.query_string.decode("utf-8"))
         # user_db.add_history(userid, query_string)
+        starring = True
     else:
         userid = None
+        starring = False
     if request.args['query_type'] == 'text':
         search_type = request.args.get('search_type', 'lemma')
         query_info, sents_info = text_search.search(query, userid, search_type)
@@ -45,6 +47,7 @@ def result(lang):
         sents_info=sents_info,
         query=query,
         authorized=True,
+        starring=starring,
     )
     # if request.form['query_type'] == "By text":
     #     user_request = request.form['query']
