@@ -34,10 +34,11 @@ def result(lang):
     else:
         userid = None
         starring = "false"
-    if request.args['query_type'] == 'text':
+    if request.args['search_type'] == 'lemma':
         search_type = request.args.get('search_type', 'lemma')
         query_info, sents_info = text_search.search(query, userid, search_type)
-    elif request.args['query_type'] == 'formula':
+    elif request.args['search_type'] == 'tag':
+        #поиск по тэгу
         raise NotImplementedError
 
     return render_template(

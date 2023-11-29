@@ -164,12 +164,12 @@
   {% endif %}
 {% endwith %}
         <div class="home-container1">
-          <p class="home-text"
+          <p class="home-text welcome-text"
              data-ru="Ваш инструмент для поиска математических выражений."
              data-en="Your tool for finding mathematical formulas and expressions.">
           </p>
           <form action="/result_{{main_lan}}" method="get" name="form" class="search-search">
-            <div class="search-container">
+            <h4 data-en="Search by text" data-ru="Поиск по тексту"></h4>
               <div class="search-container">
                 <div class="search-container1">
                   <input
@@ -180,36 +180,56 @@
                     name="query"
                     value=""
                   />
-                  <select required="" name="query_type" class="search-select">
-                    <option value="text" selected="" data-en="by text" data-ru="по тексту"></option>
-                    <option value="formula" data-en="by formula"  data-ru="по формуле" disabled></option>
-                  </select>
                   <select required="" name="search_type" class="search-select1">
                     <option value="lemma" selected="" data-en="word search"  data-ru="обычный поиск"></option>
-                    <option value="word" data-en="exact form search" data-ru="точный поиск"></option>
+                    <option value="word" data-en="exact form search" data-ru="точный поиск" disabled></option>
                   </select>
                 </div>
                 <button type="submit" class="search-button button">
-                  <span data-en="Search" data-ru="Поиск"></span>
+                  <span data-en="Search" data-ru="Найти"></span>
                 </button>
               </div>
-            </div>
+          </form>
+          <form action="/result_{{main_lan}}" method="get" name="form" class="search-search2">
+            <h4 data-en="Search by mathematical operation (tag)" data-ru="Поиск по математическому дейтсвию (тэгу)"></h4>
+              <div class="search-container">
+                <div class="search-container2">
+                  <select required="" name="query" class="search-select2">
+                    <option value="lemma" selected="" data-en="word search"  data-ru="обычный поиск"></option>
+                    <option value="word" data-en="exact form search" data-ru="точный поиск"></option>
+                  </select>
+                  <select required="" name="search_type" class="search-select1">
+                    <option value="tag" selected="" data-en="by tag" data-ru="по тэгу"></option>
+                  </select>
+                </div>
+                <button type="submit" class="search-button button">
+                  <span data-en="Search" data-ru="Найти"></span>
+                </button>
+              </div>
           </form>
         </div>
         <div class="home-container6">
           <h1 class="home-text3" data-en="About corpus" data-ru="О корпусе"></h1>
           <span class="home-text4"
-                data-en="Sample text. Click to select the text box. Click again or double
-            click to start editing the text. Dictum non consectetur a erat nam
-            at. Aliquam malesuada bibendum arcu vitae elementum curabitur vitae.
-            Tellus mauris a diam maecenas sed enim ut sem. Ipsum faucibus vitae
-            aliquet nec ullamcorper sit amet risus nullam. Pretium nibh ipsum
-            consequat nisl vel pretium. In eu mi bibendum neque egestas congue.
-            Vitae ultricies leo integer malesuada nunc. Nibh praesent tristique
-            magna sit amet purus gravida. Diam volutpat commodo sed egestas.
-            Gravida dictum fusce ut placerat orci nulla pellentesque."
-                data-ru="О корпусе"
+                data-en='"Mathematicon" — a corpus of oral texts based
+                 on recordings of lectures on mathematical subjects (algebra, geometry,
+                 statistical subjects, etc.). The goal of the project is to create
+                 a corpus that will reflect the real mathematical language and its features, and will also
+                 an useful tool for foreigners in the process of learning the Russian language or teaching mathematics in Russian.'
+                data-ru='"Математикон" — корпус устных текстов, основанный
+                на записях лекций по математическим предметам (алгебре, геометрии,
+                статистике и т.д.). Цель проекта - создать корпус, который будет отражать реальный повседневный математический язык
+                 и его особенности, а также станет полезным инструментом иностранцам в процессе изучения русского языка
+                 или обучения математике на русском.'
           >
+          </span>
+          <span class="home-text4"
+                data-en="The corpus is in the process of development: the text database is being replenished,
+          the creation of a marking system useful for students' RFLs, as well as the development of a reference book
+          and test system are ongoing."
+                data-ru="Корпус находится в процессе разработки: продолжается пополнение базы текстов, создание полезной для
+                РКИ студентов системы разметки, а также разработка справочника и системы тестов.">
+
           </span>
         </div>
         <footer class="footer-footer">
