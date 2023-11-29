@@ -25,7 +25,7 @@ class HTMLsentence:
     left: str = ''
     right: str = ''
     yb_link: str = ''
-    star: bool = False
+    star: str = "false"
 
 
 @dataclass
