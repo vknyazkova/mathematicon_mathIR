@@ -249,44 +249,50 @@ class TextDBHandler(DBHandler):
         WHERE name = (?)''', (name,))
         return cur.fetchone()
 
-    def _add_math_branch(self, name: str, commit: bool = True) -> int:
+    def _add_math_branch(self, name: str, commit: bool = True) -> Tuple[int, ]:
+        cur = self.conn.execute("""
+                    INSERT or IGNORE INTO math_branches (name)
+                    VALUES (?)
+                    RETURNING id""", (name,))
+        if commit:
+            self.conn.commit()
+        return cur.fetchone()
+
+    def math_branch_id(self, name: str, commit: bool = True) -> int:
         math_branch_id = self._get_math_branch_id(name)
         if not math_branch_id:
-            cur = self.conn.execute("""
-            INSERT or IGNORE INTO math_branches (name)
-            VALUES (?)
-            RETURNING id""", (name,))
-            math_branch_id = cur.fetchone()[0]
-
-            if commit:
-                self.conn.commit()
+            math_branch_id = self._add_math_branch(name, commit=commit)
         return math_branch_id[0]
 
-    def _get_text_level(self, name: str) -> Optional[Tuple[int, ]]:
+    def _get_text_level_id(self, name: str) -> Optional[Tuple[int,]]:
         cur = self.conn.execute("""
         SELECT id 
         FROM text_difficulty
         WHERE name = (?)""", (name, ))
         return cur.fetchone()
 
-    def _add_text_level(self, name: str, commit: bool = True) -> int:
-        text_level_id = self._get_text_level(name)
-        if not text_level_id:
-            cur = self.conn.execute(
-                """
-                INSERT or IGNORE INTO text_difficulty (name)
-                VALUES (?)
-                RETURNING id""", (name, ))
-            text_level_id = cur.fetchone()
+    def _add_text_level(self,
+                        name: str,
+                        commit: bool = True) -> Tuple[int, ]:
+        cur = self.conn.execute(
+            """
+            INSERT or IGNORE INTO text_difficulty (name)
+            VALUES (?)
+            RETURNING id""", (name, ))
+        if commit:
+            self.conn.commit()
+        return cur.fetchone()
 
-            if commit:
-                self.conn.commit()
+    def text_level_id(self, name: str, commit: bool = True) -> int:
+        text_level_id = self._get_text_level_id(name)
+        if not text_level_id:
+            text_level_id = self._add_text_level(name, commit=commit)
         return text_level_id[0]
 
     def add_text(self, text: DatabaseText, status: str = 'texts'):
         with self.transaction():
-            math_branch_id = self._add_math_branch(text.branch, commit=False)
-            text_difficulty_id = self._add_text_level(text.level, commit=False)
+            math_branch_id = self.math_branch_id(text.branch, commit=False)
+            text_difficulty_id = self.text_level_id(text.level, commit=False)
             self.conn.execute("""
             INSERT INTO texts (title, filename, youtube_link, math_branch_id, level_id, status_id, timecode_start, timecode_end)
             VALUES (
@@ -335,7 +341,7 @@ class TextDBHandler(DBHandler):
             :pos_in_text)""", vars(sentence))
             self.update_text_status(sentence.filename, status)
 
-    def _get_lemma_id(self, lemma: str) -> Optional[Tuple[int,]]:
+    def _get_lemma_id(self, lemma: str) -> Optional[Tuple[int, ]]:
         cur = self.conn.execute("""
         SELECT id
         FROM lemmas
@@ -344,17 +350,21 @@ class TextDBHandler(DBHandler):
 
     def _add_lemma(self,
                    lemma: str,
-                   commit: bool = True) -> int:
+                   commit: bool = True) -> Tuple[int, ]:
+        cur = self.conn.execute("""
+                    INSERT INTO lemmas (name)
+                    VALUES (?)
+                    RETURNING id""", (lemma,))
+        if commit:
+            self.conn.commit()
+        return cur.fetchone()
+
+    def lemma_id(self,
+                 lemma: str,
+                 commit: bool = True) -> int:
         lemma_id = self._get_lemma_id(lemma)
         if not lemma_id:
-            cur = self.conn.execute("""
-            INSERT INTO lemmas (name)
-            VALUES (?)
-            RETURNING id""", (lemma,))
-            lemma_id = cur.fetchone()
-
-            if commit:
-                self.conn.commit()
+            lemma_id = self._add_lemma(lemma, commit)
         return lemma_id[0]
 
     def _get_pos_id(self, pos_tag: str) -> Optional[Tuple[int, ]]:
@@ -366,21 +376,26 @@ class TextDBHandler(DBHandler):
 
     def _add_pos(self,
                  pos_tag: str,
-                 commit: bool = True) -> int:
+                 commit: bool = True) -> Tuple[int, ]:
+        cur = self.conn.execute("""
+                    INSERT INTO pos (name)
+                    VALUES (?)
+                    RETURNING id""", (pos_tag, ))
+        if commit:
+            self.conn.commit()
+
+        return cur.fetchone()
+
+    def pos_id(self,
+               pos_tag: str,
+               commit: bool = True) -> int:
         pos_id = self._get_pos_id(pos_tag)
         if not pos_id:
-            cur = self.conn.execute("""
-            INSERT INTO pos (name)
-            VALUES (?)
-            RETURNING id""", (pos_tag, ))
-            pos_id = cur.fetchone()
-
-            if commit:
-                self.conn.commit()
+            pos_id = self._add_pos(pos_tag, commit)
         return pos_id[0]
 
     def _get_morph_category_id(self,
-                            category: str) -> Optional[Tuple[int, ]]:
+                               category: str) -> Optional[Tuple[int, ]]:
         cur = self.conn.execute("""
         SELECT id 
         FROM morph_categories
@@ -389,17 +404,21 @@ class TextDBHandler(DBHandler):
 
     def _add_morph_category(self,
                             category: str,
-                            commit: bool = True) -> int:
+                            commit: bool = True) -> Tuple[int, ]:
+        cur = self.conn.execute("""
+                    INSERT INTO morph_categories (name)
+                    VALUES (?)
+                    RETURNING id""", (category, ))
+        if commit:
+            self.conn.commit()
+        return cur.fetchone()
+
+    def morph_category_id(self,
+                          category: str,
+                          commit: bool = True) -> int:
         cat_id = self._get_morph_category_id(category)
         if not cat_id:
-            cur = self.conn.execute("""
-            INSERT INTO morph_categories (name)
-            VALUES (?)
-            RETURNING id""", (category, ))
-            cat_id = cur.fetchone()
-
-            if commit:
-                self.conn.commit()
+            cat_id = self._add_morph_category(category, commit)
         return cat_id[0]
 
     def _get_morph_value_id(self,
@@ -412,18 +431,21 @@ class TextDBHandler(DBHandler):
 
     def _add_morph_value(self,
                          value: str,
-                         commit: bool = True) -> int:
+                         commit: bool = True) -> Tuple[int, ]:
+        cur = self.conn.execute("""
+                    INSERT INTO morph_values (name)
+                    VALUES (?)
+                    RETURNING id""", (value, ))
+        if commit:
+            self.conn.commit()
+        return cur.fetchone()
+
+    def morph_value_id(self,
+                       value: str,
+                       commit: bool = True) -> int:
         val_id = self._get_morph_value_id(value)
         if not val_id:
-            cur = self.conn.execute("""
-            INSERT INTO morph_values (name)
-            VALUES (?)
-            RETURNING id""", (value, ))
-            val_id = cur.fetchone()
-
-            if commit:
-                self.conn.commit()
-
+            val_id = self._add_morph_value(value, commit)
         return val_id[0]
 
     def _add_token_morph(self,
@@ -431,8 +453,8 @@ class TextDBHandler(DBHandler):
                          morph_annot: Iterable[DatabaseMorph],
                          commit: bool = True):
         for morph in morph_annot:
-            cat_id = self._add_morph_category(morph.category, commit=commit)
-            val_id = self._add_morph_value(morph.value, commit=commit)
+            cat_id = self.morph_category_id(morph.category, commit=commit)
+            val_id = self.morph_value_id(morph.value, commit=commit)
             self.conn.execute("""
             INSERT or IGNORE INTO morph_features (token_id, category_id, value_id) 
             VALUES (?, ?, ?)""", (token_id, cat_id, val_id))
@@ -443,8 +465,8 @@ class TextDBHandler(DBHandler):
     def _add_token_info(self,
                         token: DatabaseToken,
                         commit: bool = True):
-        pos_id = self._add_pos(token.pos, commit=commit)
-        lemma_id = self._add_lemma(token.lemma, commit=commit)
+        pos_id = self.pos_id(token.pos, commit=commit)
+        lemma_id = self.lemma_id(token.lemma, commit=commit)
         cur = self.conn.execute("""
         INSERT INTO tokens (sent_id, token, whitespace, pos_in_sent, char_start, char_end, pos_id, lemma_id)
         VALUES (
@@ -530,179 +552,208 @@ class TextDBHandler(DBHandler):
 
 class MathDBHandler(DBHandler):
 
-    def _add_languages(self, info: Iterable[MathtagAttrs], commit: bool = True):
-        """
-        Adds language names to the langs table, ignoring duplicates.
+    def _get_lang_id(self, lang_name: str) -> Optional[Tuple[int, ]]:
+        cur = self.conn.execute("""
+        SELECT id
+        FROM langs
+        WHERE name = (?)""", (lang_name,))
+        return cur.fetchone()
+
+    def _add_lang(self,
+                  lang: str,
+                  commit: bool = True) -> Tuple[int, ]:
+        cur = self.conn.execute("""
+                    INSERT INTO langs (name)
+                    VALUES (?)
+                    RETURNING id""", (lang, ))
+        if commit:
+            self.conn.commit()
+        return cur.fetchone()
+
+    def lang_id(self,
+                lang_name: str,
+                commit: bool = True) -> int:
+        lang_id = self._get_lang_id(lang_name)
+        if not lang_id:
+            lang_id = self._add_lang(lang_name, commit)
+        return lang_id[0]
+
+    def _get_tag_id(self,
+                    inception_id: str) -> Optional[Tuple[int, ]]:
+        cur = self.conn.execute("""
+        SELECT id
+        FROM math_tags
+        WHERE inception_id = (?)""", (inception_id, ))
+
+        return cur.fetchone()
+
+    def _add_inception_tag(self,
+                           inception_tag: str,
+                           commit: bool = True) -> Tuple[int, ]:
+        cur = self.conn.execute("""
+                    INSERT INTO math_tags (inception_id)
+                    VALUES (?)
+                    RETURNING id""", (inception_tag, ))
+        if commit:
+            self.conn.commit()
+        return cur.fetchone()
     
-        Args:
-            info (Iterable[MathtagAttrs]): An iterable of MathtagAttrs objects containing language information.
-                Each object should have the 'lang' attribute representing the language name.
-            commit (bool, optional): If True, commits the changes to the database. Defaults to True.
-        """
-        self.conn.executemany(
-            """
-        INSERT or IGNORE INTO langs (name)
-        VALUES (:lang)""",
-            (asdict(attr) for attr in info),
-        )
+    def math_tag_id(self,
+                    inception_tag: str,
+                    commit: bool = True) -> int:
+        tag_id = self._get_tag_id(inception_tag)
+        if not tag_id:
+            tag_id = self._add_inception_tag(inception_tag, commit)
+        return tag_id[0]
+
+    def _add_tag_info(self,
+                      tag_id: int,
+                      tag_attrs: Iterable[MathtagAttrs],
+                      commit: bool = True):
+        for attr in tag_attrs:
+            lang_id = self.lang_id(attr.lang)
+            self.conn.execute("""
+            INSERT or IGNORE INTO math_tag_info (math_tag_id, info_type_id, lang_id, text)
+            VALUES (
+            :tag_id,
+            (SELECT id FROM math_tag_info_types WHERE name = :attr_name),
+            :lang_id,
+            :text)""", vars(attr) | {'tag_id': tag_id, 'lang_id': lang_id})
+
         if commit:
             self.conn.commit()
 
-    def _add_tag_info(self, info: Iterable[MathtagAttrs], commit: bool = True):
-        """
-        Inserts tag information into the math_tag_info table, adding language names to the langs table if they don't exist.
-    
-        Args:
-            info (Iterable[MathtagAttrs]): An iterable of MathtagAttrs objects containing tag information.
-                Each object should have the following attributes: 'mathtag_id', 'attr_name', 'lang', 'text'.
-            commit (bool, optional): If True, commits the changes to the database. Defaults to True.
-        """
-        self._add_languages(info, commit=False)
-        self.conn.executemany(
-            """
-                    INSERT or IGNORE INTO math_tag_info (math_tag_id, info_type_id, lang_id, text) 
-                    VALUES (
-                    (SELECT id FROM math_tags WHERE inception_id = :mathtag_id),
-                    (SELECT id FROM math_tag_info_types WHERE name = :attr_name),
-                    (SELECT id FROM langs WHERE name = :lang),
-                    :text)""",
-            (asdict(attr) for attr in info),
-        )
-        if commit:
-            self.conn.commit()
-
-    def add_nodes(self, math_tags: Iterable[Mathtag]):
-        """
-        Adds mathematical concept nodes to the math_tags table and their associated tag information to the math_tag_info table.
-    
-        Args:
-            math_tags (Iterable[Mathtag]): An iterable of Mathtag objects representing mathematical concepts.
-    
-        Notes:
-            - If any exception occurs during the insertion process, the changes are rolled back, and the exception is printed.
-        """
-        try:
+    def add_nodes(self,
+                  math_tags: Iterable[Mathtag]):
+        with self.transaction():
             for tag in math_tags:
-                self.conn.execute(
-                    """
-                INSERT INTO math_tags (inception_id)
-                VALUES (:inception_id)""",
-                    asdict(tag),
-                )
-                self._add_tag_info(info=tag.attrs, commit=False)
-                self.conn.commit()
-        except Exception as e:
-            self.conn.rollback()
-            print(e)
+                tag_id = self.math_tag_id(tag.inception_id, commit=False)
+                self._add_tag_info(tag_id, tag.attrs, commit=False)
 
-    def _add_edge_types(self, math_tags: Iterable[Mathtag], commit: bool = True):
-        """
-        Adds edge types to the kb_edge_types table, ignoring duplicates.
-    
-        Args:
-            math_tags (Iterable[Mathtag]): An iterable of Mathtag objects representing mathematical concepts.
-                Each object should have the 'edge_type' attribute representing the edge type.
-            commit (bool, optional): If True, commits the changes to the database. Defaults to True.
-        """
-        self.conn.executemany(
-            """
-        INSERT or IGNORE INTO kb_edge_types (name)
-        VALUES (:edge_type)""",
-            (asdict(tag) for tag in math_tags if tag.edge_type),
-        )
+    def _get_edge_type_id(self,
+                          edge_type: str) -> Optional[Tuple[int, ]]:
+        cur = self.conn.execute("""
+        SELECT id
+        FROM kb_edge_types
+        WHERE name = (?)""", (edge_type, ))
+        return cur.fetchone()
+
+    def _add_edge_type(self,
+                       edge_type: str,
+                       commit: bool = True) -> Tuple[int, ]:
+        if edge_type:
+            cur = self.conn.execute("""
+            INSERT INTO kb_edge_types (name)
+            VALUES (?)
+            RETURNING id""", (edge_type, ))
+            if commit:
+                self.conn.commit()
+            edge_id = cur.fetchone()
+        else:
+            edge_id = [None]
+        return edge_id
+
+    def edge_type_id(self,
+                     edge_type: str,
+                     commit: bool = True) -> int:
+        et_id = self._get_edge_type_id(edge_type)
+        if not et_id:
+            et_id = self._add_edge_type(edge_type, commit)
         if commit:
             self.conn.commit()
+        return et_id[0]
 
-    def add_edges(self, math_tags: Iterable[Mathtag]):
-        """
-        Adds parent-child relationships and edge types to mathematical concept nodes in the math_tags table.
-    
-        Args:
-            math_tags (Iterable[Mathtag]): An iterable of Mathtag objects representing mathematical concepts.
-    
-        Notes:
-            - If any exception occurs during the update process, the changes are rolled back, and the exception is printed.
-        """
-        try:
-            self._add_edge_types(math_tags, commit=False)
-            self.conn.executemany(
-                """
-            UPDATE math_tags
-            SET parent_id = (SELECT id FROM math_tags WHERE inception_id = :parent_id),
-            edge_type = (SELECT id FROM kb_edge_types WHERE name = :edge_type)
-            WHERE inception_id = :inception_id""",
-                (asdict(tag) for tag in math_tags),
-            )
-            self.conn.commit()
-        except Exception as e:
-            self.conn.rollback()
-            print(e)
+    def add_edges(self,
+                  math_tags: Iterable[Mathtag]):
+        with self.transaction():
+            for t in math_tags:
+                e_type_id = self.edge_type_id(t.edge_type, commit=False)
+                parent_id = self._get_tag_id(t.parent_id)
+                if parent_id:
+                    parent_id = parent_id[0]
+                self.conn.execute("""
+                UPDATE math_tags
+                SET parent_id = (?),
+                edge_type = (?)
+                WHERE inception_id = (?)""", (parent_id, e_type_id, t.inception_id))
 
-    def _get_annot_frag_id(self, annot_frag: AnnotFrag) -> Tuple[int, ]:
+    def _get_annot_sent_id(self, annot_frag: AnnotFrag) -> int:
+        cur = self.conn.execute("""
+        SELECT sents.id
+        FROM sents
+        LEFT JOIN texts
+        ON sents.text_id = texts.id
+        WHERE sents.pos_in_text = :sent_idx
+        AND texts.filename = :filename""", vars(annot_frag))
+        return cur.fetchone()[0]
+
+    def _get_annot_frag_id(self,
+                           annot_sent_id: int,
+                           annot_frag: AnnotFrag) -> Tuple[int, ]:
         cur = self.conn.execute('''
                 SELECT annot_fragment.id
                 FROM annot_fragment
-                LEFT JOIN sents
-                ON annot_fragment.sent_id = sents.id
-                LEFT JOIN texts
-                ON sents.text_id = texts.id
-                WHERE sents.pos_in_text = :sent_idx 
-                AND texts.filename = :filename
+                WHERE annot_fragment.sent_id = :db_sent_id
                 AND annot_fragment.char_start = :char_start
-                AND annot_fragment.char_end = :char_end''', vars(annot_frag))
+                AND annot_fragment.char_end = :char_end''', vars(annot_frag) | {'db_sent_id': annot_sent_id})
         return cur.fetchone()
 
-    def _add_annot_frag(self, annot_frag: AnnotFrag,
-                        commit: bool = True) -> int:
-        cur = self.conn.execute('''
-        INSERT or IGNORE INTO annot_fragment (sent_id, char_start, char_end) 
-        VALUES (
-        (SELECT sents.id FROM sents LEFT JOIN texts ON sents.text_id = texts.id 
-        WHERE sents.pos_in_text = :sent_idx AND texts.filename = :filename),
-        :char_start,
-        :char_end)
-        RETURNING annot_fragment.id''', vars(annot_frag))
-
-        annot_frag_id = cur.fetchone()
-        if not annot_frag_id:
-            annot_frag_id = self._get_annot_frag_id(annot_frag)
+    def _add_annot_frag(self,
+                        annot_sent_id: int,
+                        annot_frag: AnnotFrag,
+                        commit: bool = True) -> Tuple[int, ]:
+        cur = self.conn.execute("""
+        INSERT INTO annot_fragment (sent_id, char_start, char_end) 
+        VALUES (:db_sent_id,
+                :char_start,
+                :char_end)
+                RETURNING id""", vars(annot_frag) | {'db_sent_id': annot_sent_id})
         if commit:
             self.conn.commit()
+        return cur.fetchone()
+
+    def annot_frag_id(self,
+                      annot_frag: AnnotFrag,
+                      commit: bool = True) -> int:
+        annot_sent_id = self._get_annot_sent_id(annot_frag)
+        annot_frag_id = self._get_annot_frag_id(annot_sent_id, annot_frag)
+        if not annot_frag_id:
+            annot_frag_id = self._add_annot_frag(annot_sent_id, annot_frag, commit)
         return annot_frag_id[0]
 
-    def _get_math_entity_id(self, math_ent: MathEntity) -> Tuple[int, ]:
+    def _get_math_entity_id(self,
+                            annot_frag_id: int,
+                            math_ent: MathEntity) -> Tuple[int, ]:
         cur = self.conn.execute('''
         SELECT math_entities.id
         FROM math_entities
-        JOIN annot_fragment
-        ON math_entities.frag_id = annot_fragment.id
-        JOIN sents 
-        ON annot_fragment.sent_id = sents.id
-        JOIN texts
-        ON sents.text_id = texts.id
-        WHERE texts.filename = :filename
-        AND sents.pos_in_text = :sent_idx
-        AND annot_fragment.char_start = :char_start
-        AND annot_fragment.char_end = :char_end''', vars(math_ent))
+        WHERE math_entities.frag_id = :frag_id''', vars(math_ent) | {'frag_id' : annot_frag_id})
 
         return cur.fetchone()
 
-    def add_math_entity(self, math_ent: MathEntity,
-                        commit: bool = True) -> int:
-        annot_frag_id = self._add_annot_frag(math_ent, commit=commit)
-        cur = self.conn.execute('''
-        INSERT or IGNORE INTO math_entities (frag_id, math_tag_id, name) 
+    def _add_math_entity(self,
+                         annot_frag_id: int,
+                         math_ent: MathEntity,
+                         commit: bool = True) -> Tuple[int, ]:
+        tag_id = self._get_tag_id(math_ent.inception_id)[0]
+        cur = self.conn.execute("""
+        INSERT INTO math_entities (frag_id, math_tag_id, name) 
         VALUES (
-        :frag_id,
-        (SELECT id FROM math_tags WHERE inception_id = :inception_id),
-        :name
-        )
-        RETURNING math_entities.id''', vars(math_ent) | {'frag_id': annot_frag_id})
-        math_ent_id = cur.fetchone()
-        if not math_ent_id:
-            self._get_math_entity_id(math_ent)
+        :frag_id, 
+        :tag_id, 
+        :name)
+        RETURNING id""", {'frag_id': annot_frag_id, 'tag_id': tag_id, 'name': math_ent.name})
+
         if commit:
             self.conn.commit()
+        return cur.fetchone()
+
+    def math_entity_id(self, math_ent: MathEntity,
+                       commit: bool = True) -> int:
+        annot_frag_id = self.annot_frag_id(math_ent, commit=commit)
+        math_ent_id = self._get_math_entity_id(annot_frag_id, math_ent)
+        if not math_ent_id:
+            math_ent_id = self._add_math_entity(annot_frag_id, math_ent, commit)
         return math_ent_id[0]
 
     def add_relations(self,
@@ -710,7 +761,7 @@ class MathDBHandler(DBHandler):
                       math_entity_related: Iterable[MathEntityRelated],
                       commit: bool = True):
         for rel in math_entity_related:
-            frag_id = self._add_annot_frag(rel.fragment, commit=commit)
+            frag_id = self.annot_frag_id(rel.fragment, commit=commit)
             self.conn.execute('''
             INSERT or IGNORE INTO math_annotation (annot_frag_id, math_ent_id, role_id) 
             VALUES (
@@ -724,15 +775,25 @@ class MathDBHandler(DBHandler):
         if commit:
             self.conn.commit()
 
-    # def add_math_annotation(self, math_entity: MathEntity):
-    #     try:
-    #         math_ent_id = self.add_math_entity(math_entity, commit=False)
-    #         self.add_relations(math_ent_id, math_entity.related, commit=False)
-    #         self.conn.commit()
-    #     except sqlite3.Error as e:
-    #         print(e)
-    #         print(math_entity)
-    #         self.conn.rollback()
+    def associate_tokens_and_annot(self, commit: bool = True):
+        self.conn.execute('''
+        DELETE FROM fragment_tokens''')
+
+        self.conn.execute("""
+        INSERT INTO fragment_tokens (token_id, frag_id)
+        SELECT tokens.id AS token_id, annot_fragment.id AS frag_id
+        FROM tokens
+        JOIN annot_fragment ON tokens.sent_id = annot_fragment.sent_id
+        WHERE tokens.char_start >= annot_fragment.char_start
+        AND tokens.char_end <= annot_fragment.char_end""")
+
+        if commit:
+            self.conn.commit()
+
+    def add_math_annotation(self, math_entity: MathEntity):
+        with self.transaction():
+            math_ent_id = self.math_entity_id(math_entity, commit=False)
+            self.add_relations(math_ent_id, math_entity.related, commit=False)
 
 
 
