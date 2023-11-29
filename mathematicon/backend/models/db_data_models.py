@@ -103,7 +103,7 @@ class DatabaseSentence:
             token = DatabaseToken(spacy_token=t,
                                   pos_in_sent=i,
                                   char_start=char_cur,
-                                  char_end=char_end + 1,
+                                  char_end=char_end,
                                   filename=self.filename,
                                   sent_pos_in_text=self.pos_in_text)
             yield token
