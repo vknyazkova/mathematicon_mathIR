@@ -795,11 +795,9 @@ class MathDBHandler(DBHandler):
             math_ent_id = self.math_entity_id(math_entity, commit=False)
             self.add_relations(math_ent_id, math_entity.related, commit=False)
 
-
-
 class WebDBHandler(DBHandler):
-    def sents_with_query_words(self,
-                               lemmatized_query: Iterable[str]) -> Iterable[dict]:
+    def get_sent_by_lemmatized_query(self,
+                                     lemmatized_query: Iterable[str]) -> Iterable[dict]:
         pattern = '%' + '%'.join(lemmatized_query) + '%'
         cur = self.conn.execute('''
         SELECT sents.id, sents.lemmatized
