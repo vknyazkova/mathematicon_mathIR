@@ -913,8 +913,7 @@ class WebDBHandler(DBHandler):
         cur = self.conn.execute(query, math_tags)
         cur.row_factory = self.one_column_factory
         return cur.fetchall()
-    
-    
+
     def get_html_math_annotation(self, math_ents: List[int]):
         qmark_args = ", ".join("?" for t in math_ents)
         query = f"""
@@ -924,7 +923,8 @@ class WebDBHandler(DBHandler):
             GROUP_CONCAT(fragment_tokens.token_id) AS token_ids,
             GROUP_CONCAT(math_roles.color) AS colors,
             MIN(annot_fragment.char_start) AS min_char_start,
-            MAX(annot_fragment.char_end) AS min_char_end
+            MAX(annot_fragment.char_end) AS max_char_end,
+            (MAX(annot_fragment.char_end) - MIN(annot_fragment.char_start)) AS char_range
         FROM fragment_tokens
         JOIN annot_fragment ON annot_fragment.id = fragment_tokens.frag_id
         JOIN math_annotation ON math_annotation.annot_frag_id = annot_fragment.id

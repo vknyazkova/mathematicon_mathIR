@@ -14,7 +14,7 @@ class MathtagSearch:
         descendants = {tag_id}
         math_ontology = self.db.get_math_ontology()
         mathtag_tree = nx.DiGraph(math_ontology[1:])
-        descendants.union(nx.descendants(mathtag_tree, tag_id))
+        descendants = descendants.union(nx.descendants(mathtag_tree, tag_id))
         return descendants
 
     @staticmethod
@@ -25,15 +25,6 @@ class MathtagSearch:
 
     @staticmethod
     def find_intersecting_annotations(annotations):
-        """
-        Find intersecting annotations and group by sentence, splitting groups if offsets intersect.
-    
-        Parameters:
-        - annotations (list of tuples): List of annotations, where each annotation is represented as a tuple of (sent_id, char_start, char_end).
-    
-        Returns:
-        - list of lists: A list of lists where each inner list represents a group of non-intersecting annotations within the same sentence.
-        """
         grouped_annotations = []
     
         for annotation in annotations:
@@ -82,11 +73,9 @@ class MathtagSearch:
     def vanilla_coloring(self, sent):
         tokens = self.db.sent_token_info(sent[0])
         tokens_with_colors = sent[2].split(',')
-        # colors = sent[3].split(',')
         colored_tokens = []
         for t in tokens:
             if str(t['id']) in tokens_with_colors:
-                # idx = tokens_with_colors.index(str(t['id']))
                 t['color'] = 'green'
             else:
                 t['color'] = 'black'
@@ -132,7 +121,8 @@ class MathtagSearch:
         html_sentences = []
         user_favs, selected_sents = self.sort_sents_by_favourites(userid, sentence_groups)
         for sent_groups in selected_sents:
-            for sent in sent_groups:
+            sorted_sent_groups = sorted(sent_groups, key=lambda x: x[6], reverse=True)
+            for sent in sorted_sent_groups:
                 sent_info = self.db.sent_info(sent[0])
                 left, right = self.db.sent_context(sent_info["text_id"], sent_info["pos_in_text"])
                 html_sentence = HTMLsentence(
@@ -142,10 +132,11 @@ class MathtagSearch:
                     yb_link=self.create_yb_link(sent_info["youtube_link"], sent_info["timecode"]),
                     star="true" if sent[0] in user_favs else "false",
                 )
-                tokens_info = self.vanilla_coloring(sent)
+                tokens_info = self.color_sentence_tokens(sent)
                 for html_token in self.html_tokens_generator(tokens_info):
                     html_sentence.tokens.append(html_token)
                 html_sentences.append(html_sentence)
+                break
         return html_sentences
 
     def search(self,
