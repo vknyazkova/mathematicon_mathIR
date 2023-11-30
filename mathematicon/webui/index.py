@@ -40,6 +40,7 @@ def result(lang):
     if request.args['search_type'] == 'lemma':
         search_type = request.args.get('search_type', 'lemma')
         query_info, sents_info = text_search.search(query, userid, search_type)
+        hide_cap = 'false'
     elif request.args['search_type'] == 'tag':
         query_info, sents_info = mathtag_search.search(query, userid)
         hide_cap = 'true'
