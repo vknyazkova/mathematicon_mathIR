@@ -95,8 +95,8 @@ def account(lang):
                                login=current_user.username,
                                email=current_user.email,
                                history_list=history_list,
-                               id=1,
-                               text="papap")
+                               favs=favs,
+                               )
 
 
 @login_required

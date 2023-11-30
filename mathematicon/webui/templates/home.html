@@ -195,8 +195,9 @@
               <div class="search-container">
                 <div class="search-container2">
                   <select required="" name="query" class="search-select2">
-                    <option value="lemma" selected="" data-en="word search"  data-ru="обычный поиск"></option>
-                    <option value="word" data-en="exact form search" data-ru="точный поиск"></option>
+                    {% for tag in tags %}
+                    <option value={{tag["inception_id"]}}>{{tag["text"]}}</option>
+                    {%endfor%}
                   </select>
                   <select required="" name="search_type" class="search-select1">
                     <option value="tag" selected="" data-en="by tag" data-ru="по тэгу"></option>
