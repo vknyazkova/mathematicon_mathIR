@@ -5,10 +5,12 @@ from flask_login import current_user, login_required
 
 from .app import app, nlp, webdb
 from ..backend.models.text_search import TextSearch
+from ..backend.models.mathtag_search import MathtagSearch
 from ..backend.models.database import UserDBHandler
 from .. import DB_PATH
 
 text_search = TextSearch(webdb, nlp)
+mathtag_search = MathtagSearch(webdb)
 user_db = UserDBHandler(DB_PATH)
 
 
@@ -38,8 +40,9 @@ def result(lang):
         search_type = request.args.get('search_type', 'lemma')
         query_info, sents_info = text_search.search(query, userid, search_type)
     elif request.args['search_type'] == 'tag':
+        query_info, sents_info = mathtag_search.search(query, userid)
         #поиск по тэгу
-        raise NotImplementedError
+
 
     return render_template(
         "result.html",

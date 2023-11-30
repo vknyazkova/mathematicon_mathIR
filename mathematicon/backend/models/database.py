@@ -611,7 +611,7 @@ class MathDBHandler(DBHandler):
                       tag_attrs: Iterable[MathtagAttrs],
                       commit: bool = True):
         for attr in tag_attrs:
-            lang_id = self.lang_id(attr.lang)
+            lang_id = self.lang_id(attr.lang, commit)
             self.conn.execute("""
             INSERT or IGNORE INTO math_tag_info (math_tag_id, info_type_id, lang_id, text)
             VALUES (
@@ -795,6 +795,7 @@ class MathDBHandler(DBHandler):
             math_ent_id = self.math_entity_id(math_entity, commit=False)
             self.add_relations(math_ent_id, math_entity.related, commit=False)
 
+
 class WebDBHandler(DBHandler):
     def get_sent_by_lemmatized_query(self,
                                      lemmatized_query: Iterable[str]) -> Iterable[dict]:
@@ -845,7 +846,7 @@ class WebDBHandler(DBHandler):
     def sent_token_info(self,
                         sent_id: int) -> List[dict]:
         cur = self.conn.execute('''
-        SELECT tokens.token, tokens.whitespace, pos.name AS 'pos', lemmas.name AS 'lemma', tokens.char_start, tokens.char_end
+        SELECT tokens.id, tokens.token, tokens.whitespace, pos.name AS 'pos', lemmas.name AS 'lemma', tokens.char_start, tokens.char_end
         FROM tokens
         LEFT JOIN lemmas
         ON lemmas.id = tokens.lemma_id
@@ -873,6 +874,93 @@ class WebDBHandler(DBHandler):
         FROM pos
         ORDER BY name''')
         return cur.fetchall()
+
+    def get_available_tags(self, label_lang: str = "ui"):
+        cur = self.conn.execute(
+            """
+        SELECT DISTINCT math_tags.inception_id, math_tag_info.text
+        FROM math_tags
+        LEFT JOIN math_entities
+        ON math_entities.math_tag_id = math_tags.id
+        JOIN math_tag_info
+        ON math_tag_info.math_tag_id = math_tags.id
+        JOIN langs
+        ON langs.id = math_tag_info.lang_id
+        WHERE math_entities.id NOTNULL
+        AND langs.name = (?)""",
+            (label_lang,),
+        )
+        cur.row_factory = self.dict_factory
+    
+        return cur.fetchall()
+    
+    def get_math_ontology(self):
+        cur = self.conn.execute(
+            """
+        SELECT parent_id, id
+        FROM math_tags"""
+        )
+        return cur.fetchall()
+    
+    def get_math_entities(self, math_tags: List[int]):
+        qmark_args = ", ".join("?" for t in math_tags)
+    
+        query = f"""
+        SELECT math_entities.id
+        FROM math_entities
+        WHERE math_entities.math_tag_id IN ({qmark_args})"""
+    
+        cur = self.conn.execute(query, math_tags)
+        cur.row_factory = self.one_column_factory
+        return cur.fetchall()
+    
+    
+    def get_html_math_annotation(self, math_ents: List[int]):
+        qmark_args = ", ".join("?" for t in math_ents)
+        query = f"""
+        SELECT 
+            annot_fragment.sent_id, 
+            math_entities.id,
+            GROUP_CONCAT(fragment_tokens.token_id) AS token_ids,
+            GROUP_CONCAT(math_roles.color) AS colors,
+            MIN(annot_fragment.char_start) AS min_char_start,
+            MAX(annot_fragment.char_end) AS min_char_end
+        FROM fragment_tokens
+        JOIN annot_fragment ON annot_fragment.id = fragment_tokens.frag_id
+        JOIN math_annotation ON math_annotation.annot_frag_id = annot_fragment.id
+        JOIN math_roles ON math_roles.id = math_annotation.role_id
+        JOIN math_entities ON math_entities.id = math_annotation.math_ent_id
+        WHERE math_entities.id IN ({qmark_args})
+        GROUP BY math_entities.id, annot_fragment.sent_id
+        ORDER BY annot_fragment.sent_id, min_char_start"""
+    
+        cur = self.conn.execute(query, math_ents)
+        # cur.row_factory = self.dict_factory
+        return cur.fetchall()
+    
+    def get_math_ent_sents(self, math_ents: List[int]):
+        qmark_args = ", ".join("?" for t in math_ents)
+        query = f"""
+        SELECT DISTINCT annot_fragment.sent_id
+        FROM math_entities
+        JOIN annot_fragment
+        ON annot_fragment.id = math_entities.frag_id
+        WHERE math_entities.id IN ({qmark_args})"""
+        cur = self.conn.execute(query, math_ents)
+        cur.row_factory = self.one_column_factory
+    
+        return cur.fetchall()
+
+    def math_tag_id(self, inception_id: str) -> int:
+        cur = self.conn.execute(
+            """
+            SELECT id
+            FROM math_tags
+            WHERE inception_id = (?)""",
+            (inception_id,),
+        )
+
+        return cur.fetchone()[0]
 
 
 if __name__ == '__main__':
