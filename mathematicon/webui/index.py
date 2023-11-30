@@ -53,22 +53,6 @@ def result(lang):
         authorized=True,
         starring=starring,
     )
-    # if request.form['query_type'] == "By text":
-    #     user_request = request.form['query']
-    # else:
-    #     user_request = "вы ввели формулу"
-    # return redirect(url_for('result_page', lang=lang, query=user_request))
-
-
-# @app.route('/<query>_<lang>')
-# def result_page(query, lang, ):
-#     if current_user.is_authenticated:
-#         userid = current_user.id
-#     else:
-#         userid = None
-#     query_info, sents_info = text_search.search(query, userid)
-#     return render_template('result.html', main_lan=lang, query_info=query_info, sents_info=sents_info,
-#                            query=query, authorized=True)
 
 
 @app.route('/help_<lang>')
