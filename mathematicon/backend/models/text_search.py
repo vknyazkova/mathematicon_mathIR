@@ -79,6 +79,7 @@ class TextSearch:
             sorted_sents = selected_sents
         return user_favs, sorted_sents
 
+
     def color_sentence_tokens(self,
                               matched_sent: SentenceMatch,
                               query: QueryInfo):

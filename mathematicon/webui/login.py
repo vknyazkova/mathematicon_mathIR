@@ -61,13 +61,35 @@ def login(lang):
     return render_template('login.html', main_lan=lang)
 
 
+def user_favs(userid):
+    user_favs = user_db.get_user_favs(current_user.id)
+    favs = []
+    for query_group in user_favs:
+        query = '+'.join(query_group[0].split(' '))
+        if query_group[1] == 'tag':
+            query = user_db.math_tag_ui_name(query[0])
+        query_str = 'query=' + query + '&' + 'search_type=' + query_group[1]
+        sents_ids = query_group[2].split(';')
+        sents = query_group[3].split(';')
+        favs.append((query, query_str, list(zip(sents_ids, sents))))
+    return favs
+
+
 @app.route('/account_<lang>', methods=['POST', 'GET'])
 def account(lang):
     if not current_user.is_authenticated:
         return redirect(url_for('login', lang=lang))
     else:
         user_queries = user_db.get_user_history(current_user.id)
-        history_list = [(parse_qs(q)['query'][0], q) for q in user_queries]
+        history_list = []
+        for q in user_queries:
+            parsed = parse_qs(q)
+            query = parsed['query'][0]
+            if parsed['search_type'][0] == 'tag':
+                query = user_db.math_tag_ui_name(query)
+            history_list.append((query, q))
+
+        favs = user_favs(userid=current_user.id)
         return render_template('account.html',
                                main_lan=lang,
                                login=current_user.username,
@@ -83,7 +105,7 @@ def remove_sent():
     user_request = request.get_json()
     if user_request['method'] == 'add':
         query = ' '.join(user_request['query'].split('+'))
-        query_type = '_'.join([user_request.get('query_type', 'text'), user_request.get('search_type', 'lemma')])
+        query_type = user_request['search_type']
         user_db.add_favs(current_user.id, query=query, query_type=query_type, sent_id=user_request['id'])
     elif user_request['method'] == 'delete':
         user_db.remove_fav(current_user.id, user_request['id'])

@@ -47,7 +47,6 @@ class MorphologyCorrectionHandler:
     def ptcp_corrector(self, token, pymorphy_parsed):
         if token.pos_ == 'VERB' and token.morph.get('VerbForm') \
                 and token.morph.get('VerbForm')[0] == 'Part':
-            print('participle', token.text)
             prtf_form = pymorphy_parsed.inflect({'sing', 'masc', 'nomn'}).word
             inf_form = pymorphy_parsed.inflect({'INFN'}).word
             token.tag_ = 'PTCP|VERB'

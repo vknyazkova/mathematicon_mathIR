@@ -5,10 +5,12 @@ from flask_login import current_user, login_required
 
 from .app import app, nlp, webdb
 from ..backend.models.text_search import TextSearch
+from ..backend.models.mathtag_search import MathtagSearch
 from ..backend.models.database import UserDBHandler
 from .. import DB_PATH
 
 text_search = TextSearch(webdb, nlp)
+mathtag_search = MathtagSearch(webdb)
 user_db = UserDBHandler(DB_PATH)
 
 
@@ -19,6 +21,8 @@ def start_page():
 
 @app.route('/main_<lang>')
 def main_page(lang):
+    available_tags = webdb.get_available_tags()
+    print(available_tags)
     return render_template('home.html', main_lan=lang)
 
 
@@ -38,8 +42,9 @@ def result(lang):
         search_type = request.args.get('search_type', 'lemma')
         query_info, sents_info = text_search.search(query, userid, search_type)
     elif request.args['search_type'] == 'tag':
+        query_info, sents_info = mathtag_search.search(query, userid)
         #поиск по тэгу
-        raise NotImplementedError
+
 
     return render_template(
         "result.html",
@@ -50,22 +55,6 @@ def result(lang):
         authorized=True,
         starring=starring,
     )
-    # if request.form['query_type'] == "By text":
-    #     user_request = request.form['query']
-    # else:
-    #     user_request = "вы ввели формулу"
-    # return redirect(url_for('result_page', lang=lang, query=user_request))
-
-
-# @app.route('/<query>_<lang>')
-# def result_page(query, lang, ):
-#     if current_user.is_authenticated:
-#         userid = current_user.id
-#     else:
-#         userid = None
-#     query_info, sents_info = text_search.search(query, userid)
-#     return render_template('result.html', main_lan=lang, query_info=query_info, sents_info=sents_info,
-#                            query=query, authorized=True)
 
 
 @app.route('/help_<lang>')
