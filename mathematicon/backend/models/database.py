@@ -121,6 +121,7 @@ class UserDBHandler(DBHandler):
             None
 
         """
+        print(userid, query, query_type)
         with self.transaction():
             self.conn.execute(
                 """INSERT INTO favourites (user_id, query, query_type, sent_id) 
@@ -235,9 +236,25 @@ class UserDBHandler(DBHandler):
         SELECT query
         FROM user_history
         WHERE user_id=?
-        ORDER BY time""", (userid,))
+        ORDER BY time DESC""", (userid,))
         cur.row_factory = self.one_column_factory
         return cur.fetchall()
+
+    def math_tag_ui_name(self,
+                         inception_id: str,
+                         lang: str = "ui"):
+        cur = self.conn.execute("""
+        SELECT math_tag_info.text
+        FROM math_tags
+        JOIN math_tag_info
+        ON math_tag_info.math_tag_id = math_tags.id
+        JOIN langs
+        ON langs.id = math_tag_info.lang_id
+        WHERE langs.name = (?)
+        AND math_tags.inception_id = (?)""", (lang, inception_id))
+        ui_name = cur.fetchone()
+        if ui_name:
+            return ui_name[0]
 
 
 class TextDBHandler(DBHandler):
@@ -893,6 +910,7 @@ class WebDBHandler(DBHandler):
         cur.row_factory = self.dict_factory
     
         return cur.fetchall()
+
     
     def get_math_ontology(self):
         cur = self.conn.execute(
