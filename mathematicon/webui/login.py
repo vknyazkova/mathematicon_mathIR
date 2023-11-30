@@ -61,6 +61,20 @@ def login(lang):
     return render_template('login.html', main_lan=lang)
 
 
+def user_favs(userid):
+    user_favs = user_db.get_user_favs(current_user.id)
+    favs = []
+    for query_group in user_favs:
+        query = '+'.join(query_group[0].split(' '))
+        if query_group[1] == 'tag':
+            query = user_db.math_tag_ui_name(query[0])
+        query_str = 'query=' + query + '&' + 'search_type=' + query_group[1]
+        sents_ids = query_group[2].split(';')
+        sents = query_group[3].split(';')
+        favs.append((query, query_str, list(zip(sents_ids, sents))))
+    return favs
+
+
 @app.route('/account_<lang>', methods=['POST', 'GET'])
 def account(lang):
     if not current_user.is_authenticated:
@@ -74,6 +88,8 @@ def account(lang):
             if parsed['search_type'][0] == 'tag':
                 query = user_db.math_tag_ui_name(query)
             history_list.append((query, q))
+
+        favs = user_favs(userid=current_user.id)
         return render_template('account.html',
                                main_lan=lang,
                                login=current_user.username,

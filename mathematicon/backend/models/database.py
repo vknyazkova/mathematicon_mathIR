@@ -150,6 +150,17 @@ class UserDBHandler(DBHandler):
                 WHERE user_id = (?) AND sent_id = (?)''', (userid, sent_id)
             )
 
+    def get_user_favs(self,
+                      userid: int):
+        cur = self.conn.execute("""
+        SELECT favourites.query, favourites.query_type, group_concat(favourites.sent_id, ';'), group_concat(sents.sent, ';')
+        FROM favourites
+        LEFT JOIN sents
+        ON sents.id = favourites.sent_id
+        WHERE favourites.user_id = (?)
+        GROUP BY favourites.query""", (userid, ))
+        return cur.fetchall()
+
     def _count_user_history(self,
                             userid: int) -> int:
         """
