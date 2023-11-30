@@ -117,7 +117,9 @@ if __name__ == '__main__':
 
     mode = input('Enter mode (parse or update): ')
     if mode == 'parse':
-        files = input("filepaths: ").split(" ")
+        files = input("Directory with files or filepaths: ").split(" ")
+        if len(files) < 2 and Path(files[0]).is_dir():
+            files = [x for x in Path(files[0]).iterdir() if x.suffix == '.txt']
         yaml_converter = YamlConverter(files)
 
         dest = input('Select destination (conllu or database): ')
