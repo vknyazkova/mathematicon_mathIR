@@ -21,6 +21,8 @@ def start_page():
 
 @app.route('/main_<lang>')
 def main_page(lang):
+    available_tags = webdb.get_available_tags()
+    print(available_tags)
     return render_template('home.html', main_lan=lang)
 
 
