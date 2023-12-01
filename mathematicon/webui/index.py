@@ -22,8 +22,7 @@ def start_page():
 @app.route('/main_<lang>')
 def main_page(lang):
     available_tags = webdb.get_available_tags()
-    print(available_tags)
-    return render_template('home.html', main_lan=lang)
+    return render_template('home.html', main_lan=lang, tags=available_tags)
 
 
 @app.route('/result_<lang>', methods=['GET'])
@@ -41,11 +40,10 @@ def result(lang):
     if request.args['search_type'] == 'lemma':
         search_type = request.args.get('search_type', 'lemma')
         query_info, sents_info = text_search.search(query, userid, search_type)
+        hide_cap = 'false'
     elif request.args['search_type'] == 'tag':
         query_info, sents_info = mathtag_search.search(query, userid)
-        #поиск по тэгу
-
-
+        hide_cap = 'true'
     return render_template(
         "result.html",
         main_lan=lang,
@@ -54,6 +52,7 @@ def result(lang):
         query=query,
         authorized=True,
         starring=starring,
+        hide_cap=hide_cap,
     )
 
 

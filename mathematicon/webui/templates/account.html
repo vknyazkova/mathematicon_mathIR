@@ -186,22 +186,22 @@
             </div>
             <div id="starred" class="account-container-starred hide">
               <div class="account-container3">
-                {for search in search_list}
+                {% for example in favs %}
                 <div class="account-starred-line">
                   <div class="text-arrow">
-                    <a class="account-starred-query" href="#">Text</a>
-                    <button id="{{id}}" class="arrow up" onclick="show_example(this.id)"></button>
+                    <a class="account-starred-query" href="/result_{{ main_lan }}?{{ example[1] }}">{{example[0].replace("+", " ")}}</a>
+                    <button id="{{example[2][0][0]}}" class="arrow up" onclick="show_example(this.id)"></button>
                   </div>
-                  <div id="example-{{id}}" class="account-starred-bubble">
+                  <div id="example-{{example[2][0][0]}}" class="account-starred-bubble">
                     <p class="account-text04">
-                      {{text}}
+                      {{example[2][0][1]}}
                     </p>
                     <div class="account-container4">
-                      <button id="{{id}}" class="account-icon plus minus" onclick="send_id(this.id)"></button>
+                      <button id="{{example[2][0][0]}}" class="account-icon plus minus" onclick="send_id(this.id)"></button>
                     </div>
                   </div>
                 </div>
-                {{endfor}}
+                {% endfor %}
               </div>
             </div>
             <div id="history" class="account-container-history hide">

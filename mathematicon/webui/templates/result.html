@@ -378,12 +378,23 @@ $(".switchlang").click(function() {
     <script>
     if (!{{starring}}) {
       var buttons = document.getElementsByClassName("plus");
-      console.log(buttons);
 
       for (var i = 0; i < buttons.length; i++) {
         buttons[i].setAttribute("disabled","true");
         buttons[i].setAttribute("title", "Log in first || Сначала войдите");
       }
+    }
+  </script>
+  <script>
+    if ({{hide_cap}}) {
+      var containers = document.getElementsByClassName("result-container02");
+      for(var i = 0; i < containers.length; i++){
+          containers[i].style.display = "none";
+      };
+      var containers = document.getElementsByClassName("result-row1");
+      for(var i = 0; i < containers.length; i++){
+          containers[i].style.display = "none";
+      };
     }
   </script>
   </body>

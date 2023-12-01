@@ -90,13 +90,15 @@ def account(lang):
             history_list.append((query, q))
 
         favs = user_favs(userid=current_user.id)
+        for example in favs:
+            print(example[2][0][0])
         return render_template('account.html',
                                main_lan=lang,
                                login=current_user.username,
                                email=current_user.email,
                                history_list=history_list,
-                               id=1,
-                               text="papap")
+                               favs=favs,
+                               )
 
 
 @login_required
