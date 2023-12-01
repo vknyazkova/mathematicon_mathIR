@@ -211,7 +211,7 @@
 }
 .account-starred-bubble {
   flex: 0 0 auto;
-  display: none;
+  display: flex;
   height: fit-content;
   padding: var(--dl-space-space-unit);
   align-self: stretch;
@@ -320,7 +320,7 @@
   height: 20px;
 }
 .up {
-  height: 15px
+  height: 15px;
   margin-left: 10px;
   background-image: url('../../static/images/arrow-up.png');
   background-repeat:no-repeat;
@@ -328,7 +328,7 @@
   cursor: pointer;
 }
 .down {
-  height: 15px
+  height: 15px;
   margin-left: 10px;
   background-image: url('../../static/images/arrow-down.png');
   background-repeat:no-repeat;

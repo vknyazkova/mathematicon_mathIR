@@ -62,17 +62,29 @@ def login(lang):
 
 
 def user_favs(userid):
-    user_favs = user_db.get_user_favs(current_user.id)
+    user_favs = user_db.get_user_favs(userid)
     favs = []
     for query_group in user_favs:
-        query = '+'.join(query_group[0].split(' '))
-        if query_group[1] == 'tag':
-            query = user_db.math_tag_ui_name(query[0])
-        query_str = 'query=' + query + '&' + 'search_type=' + query_group[1]
-        sents_ids = query_group[2].split(';')
-        sents = query_group[3].split(';')
-        favs.append((query, query_str, list(zip(sents_ids, sents))))
+        query = query_group[1]
+        if query_group[2] == 'tag':
+            query = user_db.math_tag_ui_name(query)
+        query_str = 'query=' + '+'.join(query.split(' ')) + '&' + 'search_type=' + query_group[2]
+        sents_ids = query_group[3].split(';')
+        sents = query_group[4].split(';')
+        favs.append((query_group[0], query, query_str, list(zip(sents_ids, sents))))
     return favs
+
+
+def user_history_list(userid: int):
+    user_queries = user_db.get_user_history(userid)
+    history_list = []
+    for q in user_queries:
+        parsed = parse_qs(q)
+        query = parsed["query"][0]
+        if parsed["search_type"][0] == "tag":
+            query = user_db.math_tag_ui_name(query)
+        history_list.append((query, q))
+    return history_list
 
 
 @app.route('/account_<lang>', methods=['POST', 'GET'])
@@ -80,23 +92,13 @@ def account(lang):
     if not current_user.is_authenticated:
         return redirect(url_for('login', lang=lang))
     else:
-        user_queries = user_db.get_user_history(current_user.id)
-        history_list = []
-        for q in user_queries:
-            parsed = parse_qs(q)
-            query = parsed['query'][0]
-            if parsed['search_type'][0] == 'tag':
-                query = user_db.math_tag_ui_name(query)
-            history_list.append((query, q))
-
+        user_history = user_history_list(current_user.id)
         favs = user_favs(userid=current_user.id)
-        for example in favs:
-            print(example[2][0][0])
         return render_template('account.html',
                                main_lan=lang,
                                login=current_user.username,
                                email=current_user.email,
-                               history_list=history_list,
+                               history_list=user_history,
                                favs=favs,
                                )
 

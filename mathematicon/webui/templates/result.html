@@ -227,9 +227,9 @@
               <div class="result-container-sent-icons">
                 {% if authorized %}
                   {% if sent.star %}
-                    <button id="{{sent.id}}" class="result-icon05 plus minus" onclick="send_id(this.id)"></button>
+                    <button id="{{ sent.id }}" class="result-icon05 plus" onclick="send_id(this.id)"></button>
                   {% else %}
-                    <button id="{{sent.id}}" class="result-icon05 plus" onclick="send_id(this.id)"></button>
+                    <button id="{{ sent.id }}" class="result-icon05 plus minus" onclick="send_id(this.id)"></button>
                   {% endif %}
                 {% endif %}
                 <!-- ютуб -->
