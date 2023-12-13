@@ -804,6 +804,9 @@ class MathDBHandler(DBHandler):
             self.conn.commit()
 
     def associate_tokens_and_annot(self, commit: bool = True):
+        # TODO: кажется, здесь что-то не то происходит, потому что красится неправильно
+        # TODO: исправить
+
         self.conn.execute('''
         DELETE FROM fragment_tokens''')
 
