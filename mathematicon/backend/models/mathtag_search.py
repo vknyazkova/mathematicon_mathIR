@@ -25,6 +25,7 @@ class MathtagSearch:
 
     @staticmethod
     def find_intersecting_annotations(annotations):
+        # TODO: исправить, тут явно что-то не так делается
         grouped_annotations = []
     
         for annotation in annotations:
