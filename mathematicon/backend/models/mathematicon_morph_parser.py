@@ -37,13 +37,6 @@ class MorphologyCorrectionHandler:
                 raise ValueError(f'Unknown mode name = {m}')
             self._fixes.append(getattr(self, mode_attr))
 
-    # def allpos_corrector(self, token, pymorphy_parsed):
-    #     pymorphy_pos = pymorphy_parsed.tag.POS
-    #     if MorphologyCorrectionHandler.POS.get(pymorphy_pos) \
-    #             and token.pos_ != MorphologyCorrectionHandler.POS[pymorphy_pos]:
-    #         token.pos_ = MorphologyCorrectionHandler.POS[pymorphy_parsed.tag.POS]
-    #     return token
-
     def ptcp_corrector(self, token, pymorphy_parsed):
         if token.pos_ == 'VERB' and token.morph.get('VerbForm') \
                 and token.morph.get('VerbForm')[0] == 'Part':
