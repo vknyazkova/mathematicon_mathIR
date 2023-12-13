@@ -40,6 +40,16 @@ class TextSearch:
 
     def select_sentences(self,
                          lemmatized_query: Iterable[str]) -> Iterable[SentenceMatch]:
+        """
+        Selects sentences based on the lemmatized query.
+
+        Args:
+            lemmatized_query (Iterable[str]): Lemmatized query tokens.
+
+        Returns:
+            Iterable[SentenceMatch]: Iterable of SentenceMatch instances representing matching sentences.
+        """
+
         similar_sents = self.db.get_sent_by_lemmatized_query(lemmatized_query)
         reg_ex = r"\s?([А-Яа-яёЁ]+)?\s?".join(lemmatized_query)  # можно одно слово между не из запроса
         reg_ex = r"((?<=^)|(?<=\s))" + reg_ex + r"(?=$|\s)"  # чтобы не находились в середине слова
@@ -56,6 +66,17 @@ class TextSearch:
     def tokens_inside_matches(self,
                               lemmatized_sent: str,
                               query_match_spans: Iterable[Tuple[int, int]]):
+        """
+        Finds tokens inside the specified query match spans in a lemmatized sentence.
+
+        Args:
+            lemmatized_sent (str): Lemmatized sentence.
+            query_match_spans (Iterable[Tuple[int, int]]): Iterable of start and end positions of query matches.
+
+        Returns:
+            List[int]: List of token indices inside the query match spans.
+        """
+
         lemmas_char_starts = [
             match.start() for match in re.finditer(r"\S+", lemmatized_sent)
         ]
@@ -83,6 +104,20 @@ class TextSearch:
     def color_sentence_tokens(self,
                               matched_sent: SentenceMatch,
                               query: QueryInfo):
+        """
+        Colors tokens in a matched sentence based on the query.
+
+        Args:
+            matched_sent (SentenceMatch): The matched sentence.
+            query (QueryInfo): The query information.
+
+        Returns:
+            List[Dict[str, Any]]: List of token dictionaries with added 'color' information.
+
+        Token colors are determined as follows:
+        - Tokens that match the query tokens are colored with the corresponding color from the query.
+        - Tokens that do not match the query are colored black.
+        """
 
         tokens = self.db.sent_token_info(matched_sent.sent_id)
         sent_lemmatized = ' '.join(t["lemma"] for t in tokens)
@@ -128,6 +163,15 @@ class TextSearch:
 
     def html_tokens_generator(self,
                               tokens: Iterable[dict]):
+        """
+        Generates HTML tokens based on token information.
+
+        Args:
+            tokens (Iterable[dict]): Iterable of token information.
+
+        Yields:
+            HTMLSpan or HTMLWord: HTMLSpan for punctuation tokens and HTMLWord for other tokens.
+        """
         plain_token = HTMLSpan('')
         for token in tokens:
             if not token['pos'] == 'PUNCT':
