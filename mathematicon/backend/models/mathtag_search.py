@@ -1,4 +1,4 @@
-from typing import Iterable, Tuple
+from typing import Iterable, Tuple, List, Dict
 
 import networkx as nx
 
@@ -18,37 +18,28 @@ class MathtagSearch:
         return descendants
 
     @staticmethod
-    def intersect(offsets1, offsets2):
-        start1, end1 = offsets1
-        start2, end2 = offsets2
-        return start1 <= end2 and end1 >= start2
+    def group_annotation_fragments(annotation_fragments):
+        groups = []
+        current_group = []
 
-    @staticmethod
-    def find_intersecting_annotations(annotations):
-        # TODO: исправить, тут явно что-то не так делается
-        grouped_annotations = []
-    
-        for annotation in annotations:
-            sent_id = annotation[0]
-            char_start = annotation[4]
-            char_end = annotation[5]
-            intersecting_group = None
-    
-            # Check for intersection with existing groups
-            for group in grouped_annotations:
-                for existing_annotation in group:
-                    existing_sent_id = existing_annotation[0]
-                    existing_start = existing_annotation[4]
-                    existing_end = existing_annotation[5]
-                    if sent_id == existing_sent_id and MathtagSearch.intersect((char_start, char_end), (existing_start, existing_end)):
-                        intersecting_group = group
-                        break
-
-            if intersecting_group is not None:
-                intersecting_group.append(annotation)
+        for fragment in annotation_fragments:
+            if not current_group:
+                current_group.append(fragment)
             else:
-                grouped_annotations.append([annotation])
-        return grouped_annotations
+                # Check if the fragment belongs to the current group
+                last_fragment = current_group[-1]
+
+                if fragment[0] == last_fragment[0] and fragment[4] >= last_fragment[5]:
+                    current_group.append(fragment)
+                else:
+                    # Start a new group
+                    groups.append(current_group)
+                    current_group = [fragment]
+
+        if current_group:
+            groups.append(current_group)
+
+        return groups
 
     def sort_sents_by_favourites(self,
                                  userid: int,
@@ -83,19 +74,13 @@ class MathtagSearch:
             colored_tokens.append(t)
         return colored_tokens
 
-    def color_sentence_tokens(self, sent):
-        tokens = self.db.sent_token_info(sent[0])
-        tokens_with_colors = sent[2].split(',')
-        colors = sent[3].split(',')
-        colored_tokens = []
+    def color_sentence_tokens(self, sent_id, colormap: Dict[str, str]):
+        tokens = self.db.sent_token_info(sent_id)
+        colored_tokes = []
         for t in tokens:
-            if str(t['id']) in tokens_with_colors:
-                idx = tokens_with_colors.index(str(t['id']))
-                t['color'] = colors[idx]
-            else:
-                t['color'] = 'black'
-            colored_tokens.append(t)
-        return colored_tokens
+            t['color'] = colormap.get(str(t['id']), 'black')
+            colored_tokes.append(t)
+        return colored_tokes
 
     def html_tokens_generator(self,
                               tokens: Iterable[dict]):
@@ -122,22 +107,21 @@ class MathtagSearch:
         html_sentences = []
         user_favs, selected_sents = self.sort_sents_by_favourites(userid, sentence_groups)
         for sent_groups in selected_sents:
-            sorted_sent_groups = sorted(sent_groups, key=lambda x: x[6], reverse=True)
-            for sent in sorted_sent_groups:
-                sent_info = self.db.sent_info(sent[0])
-                left, right = self.db.sent_context(sent_info["text_id"], sent_info["pos_in_text"])
-                html_sentence = HTMLsentence(
-                    id=sent[0],
-                    left=left,
-                    right=right,
-                    yb_link=self.create_yb_link(sent_info["youtube_link"], sent_info["timecode"]),
-                    star="true" if sent[0] in user_favs else "false",
-                )
-                tokens_info = self.color_sentence_tokens(sent)
-                for html_token in self.html_tokens_generator(tokens_info):
-                    html_sentence.tokens.append(html_token)
-                html_sentences.append(html_sentence)
-                break
+            colored_tokens = {token: color for sent in sent_groups for token, color in zip(sent[2].split(','), sent[3].split(','))}
+            sent_id = sent_groups[0][0]
+            sent_info = self.db.sent_info(sent_id)
+            left, right = self.db.sent_context(sent_info["text_id"], sent_info["pos_in_text"])
+            html_sentence = HTMLsentence(
+                id=sent_id,
+                left=left,
+                right=right,
+                yb_link=self.create_yb_link(sent_info["youtube_link"], sent_info["timecode"]),
+                star="true" if sent_id in user_favs else "false",
+            )
+            tokens_info = self.color_sentence_tokens(sent_id, colored_tokens)
+            for html_token in self.html_tokens_generator(tokens_info):
+                html_sentence.tokens.append(html_token)
+            html_sentences.append(html_sentence)
         return html_sentences
 
     def search(self,
@@ -147,8 +131,8 @@ class MathtagSearch:
         tags_to_search = self.find_tag_descendants(bd_id)
         found_math_ent = self.db.get_math_entities(list(tags_to_search))
         annotations = self.db.get_html_math_annotation(found_math_ent)
-        intersec = self.find_intersecting_annotations(annotations)
-        res = self.create_html_sent(userid, intersec)
+        groups = self.group_annotation_fragments(annotations)
+        res = self.create_html_sent(userid, groups)
         return None, res
 
 
