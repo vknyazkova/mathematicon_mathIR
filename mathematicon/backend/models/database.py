@@ -821,6 +821,20 @@ class MathDBHandler(DBHandler):
         if commit:
             self.conn.commit()
 
+    def delete_dependent_math_ent_from_annot(self):
+        self.conn.execute("""
+        DELETE FROM math_annotation
+        WHERE math_ent_id IN (
+            SELECT math_entities.id
+            FROM math_annotation
+            LEFT JOIN math_roles
+            ON math_roles.id = math_annotation.role_id
+            LEFT JOIN math_entities
+            ON math_entities.frag_id = math_annotation.annot_frag_id
+            WHERE math_roles.role IN ('specifier', 'part')
+            )""")
+        self.conn.commit()
+
     def add_math_annotation(self, math_entity: MathEntity):
         with self.transaction():
             math_ent_id = self.math_entity_id(math_entity, commit=False)
@@ -935,6 +949,7 @@ class WebDBHandler(DBHandler):
         return cur.fetchall()
     
     def get_math_entities(self, math_tags: List[int]):
+        # TODO: чтобы не находились те, которые зависимы от другой сущности (типа part или specifier)
         qmark_args = ", ".join("?" for t in math_tags)
     
         query = f"""

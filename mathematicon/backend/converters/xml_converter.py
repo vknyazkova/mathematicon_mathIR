@@ -244,6 +244,7 @@ class XMLConverter:
                     db: MathDBHandler):
         for math_ent in self.math_entities:
             db.add_math_annotation(math_ent)
+        db.delete_dependent_math_ent_from_annot()
         db.associate_tokens_and_annot()
 
 
