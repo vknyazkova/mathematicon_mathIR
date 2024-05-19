@@ -3,7 +3,7 @@ from typing import Iterable, Tuple, List, Dict
 import networkx as nx
 
 from ..models.database import WebDBHandler
-from ..models.html_models import HTMLsentence, HTMLWord, HTMLSpan
+from ..models.html_models import HTMLSentence, HTMLWord, HTMLSpan
 
 
 class MathtagSearch:
@@ -111,7 +111,7 @@ class MathtagSearch:
             sent_id = sent_groups[0][0]
             sent_info = self.db.sent_info(sent_id)
             left, right = self.db.sent_context(sent_info["text_id"], sent_info["pos_in_text"])
-            html_sentence = HTMLsentence(
+            html_sentence = HTMLSentence(
                 id=sent_id,
                 left=left,
                 right=right,
