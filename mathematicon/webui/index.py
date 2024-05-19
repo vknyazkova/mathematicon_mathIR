@@ -9,9 +9,17 @@ from ..backend.models.mathtag_search import MathtagSearch
 from ..backend.models.database import UserDBHandler
 from .. import DB_PATH
 
+from ..backend.repositories.lecture_repo import LectureRepository
+from ..backend.repositories.transcript_repo import TranscriptRepository
+from ..backend.services.search_service import SearchService
+
 text_search = TextSearch(webdb, nlp)
 mathtag_search = MathtagSearch(webdb)
 user_db = UserDBHandler(DB_PATH)
+
+lecture_repo = LectureRepository(DB_PATH)
+transcript_repo = TranscriptRepository(DB_PATH)
+search_service = SearchService(nlp, lecture_repo, transcript_repo)
 
 
 @app.route('/')
@@ -38,8 +46,10 @@ def result(lang):
         userid = None
         starring = "false"
     if request.args['search_type'] == 'lemma':
-        search_type = request.args.get('search_type', 'lemma')
-        query_info, sents_info = text_search.search(query, userid, search_type)
+        query_info, sents_info = search_service.lemmaSearch(query)
+        hide_cap = 'false'
+    elif request.args['search_type'] == 'word':
+        query_info, sents_info = search_service.exactMatchSearch(query)
         hide_cap = 'false'
     elif request.args['search_type'] == 'tag':
         query_info, sents_info = mathtag_search.search(query, userid)
