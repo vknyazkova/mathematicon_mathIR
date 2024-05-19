@@ -1,3 +1,4 @@
+import numpy as np
 from pydantic import BaseModel, Field
 from typing import List, Optional
 
@@ -20,11 +21,10 @@ class Token(BaseModel):
     whitespace: bool
     pos_tag: str
     lemma: str
-    morph_annotation: str
+    morph_annotation: Optional[str]
     position_in_sentence: int
     char_offset_start: int
     char_offset_end: int
-
 
 
 class Sentence(BaseModel):
@@ -34,5 +34,40 @@ class Sentence(BaseModel):
     sentence_text: str
     lemmatized_sentence: str
     timecode_start: Optional[str]
-
     tokens: List[Token] = Field(default_factory=list)
+
+
+class AnnotationFragment(BaseModel):
+    annotation_id: Optional[int] = Field(None, description='Annotation ID in database')
+    sentence_id: int
+    char_start: int
+    char_ent: int
+    token_ids: List[int] = Field(default_factory=list)
+
+#
+# class FormulaAnnotation(BaseModel):
+#     fragment_id: Optional[int] = Field(None, description='Annotation fragment ID in database')
+#     tex_formula: str
+#     embedding_vector: np.ndarray
+
+
+class User(BaseModel):
+    user_id: Optional[int] = Field(None, description='User ID in database')
+    username: str
+    email: str
+    password_hash: str
+    salt: str
+
+
+class SearchHistory(BaseModel):
+    search_id: Optional[int] = Field(None, description='Search ID in database')
+    user_id: int
+    timestamp: int
+    query: str
+
+
+class Favorites(BaseModel):
+    favorite_id: Optional[int] = Field(None, description='Favorite ID in database')
+    user_id: int
+    query: str
+    sentence_id: int
