@@ -167,7 +167,7 @@
                   />
                   <select required="" name="search_type" class="search-select1">
                     <option value="lemma" selected="" data-en="word search"  data-ru="обычный поиск"></option>
-                    <option value="word" data-en="exact form search" data-ru="точный поиск" disabled></option>
+                    <option value="word" data-en="exact form search" data-ru="точный поиск"></option>
                   </select>
                 </div>
                 <button type="submit" class="search-button button">
@@ -217,7 +217,7 @@
                 <span id="context_b" class="text-in-bubble text-query context">{{sent.left}}</span>
                 {% endif %}
                 <span class="text-query">
-                  {% for word in sent.tokens %}{% if word.html_type == 'plain'%}{{word.text}}{% else %}<abbr class="tooltip tooltip--top" data-tooltip="{{word.pos}}"><abbr class="tooltip tooltip--bottom {{word.color}}" data-tooltip="{{word.lemma}}">{{word.text}}</abbr></abbr>{% endif %}{%endfor%}.
+                  {% for word in sent.tokens %}{% if word.html_type == 'plain'%}{{word.text}}{% else %}<abbr class="tooltip tooltip--top" data-tooltip="{{word.pos}}"><abbr class="tooltip tooltip--bottom {{word.color}}" data-tooltip="{{word.lemma}}">{{word.text}}</abbr></abbr>{% endif %}{%endfor%}
                 </span>
                 {% if sent.right%}
                 <span id="context_a" class="text-in-bubble text-query context">{{sent.right}}</span>
