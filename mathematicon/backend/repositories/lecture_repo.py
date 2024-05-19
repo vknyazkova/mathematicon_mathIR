@@ -1,5 +1,4 @@
 import sqlite3
-from contextlib import closing
 from typing import Optional
 
 from ..model import MathLecture
@@ -7,9 +6,9 @@ from ..model import MathLecture
 
 class LectureRepository:
     def __init__(self,
-                 dp_path: str,
+                 db_path: str,
                  db_conn: Optional[sqlite3.Connection] = None):
-        self.dp_path = dp_path
+        self.dp_path = db_path
         self.conn = db_conn
 
     def connect(self):
@@ -34,7 +33,7 @@ class LectureRepository:
 
         # Create math_branches table
         cursor.execute('''
-            CREATE TABLE math_branches (
+            CREATE TABLE IF NOT EXISTS math_branches (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL UNIQUE
             )
@@ -42,7 +41,7 @@ class LectureRepository:
 
         # Create text_difficulty table
         cursor.execute('''
-            CREATE TABLE text_difficulty (
+            CREATE TABLE IF NOT EXISTS text_difficulty (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL UNIQUE
             )
@@ -50,7 +49,7 @@ class LectureRepository:
 
         # Create texts table
         cursor.execute('''
-            CREATE TABLE texts (
+            CREATE TABLE IF NOT EXISTS texts (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title TEXT,
                 filename TEXT UNIQUE,
@@ -116,42 +115,3 @@ class LectureRepository:
             ))
             lecture.lecture_id = cur.fetchone()[0]
         return lecture
-
-
-if __name__ == '__main__':
-    db_path = ':memory:'
-    conn = sqlite3.connect(db_path)
-    lecture_repo = LectureRepository(db_path, conn)
-
-    lecture_repo.create_tables()
-    cur = conn.execute('''SELECT name FROM sqlite_master WHERE type='table';''')
-    print(cur.fetchall())
-
-    lecture1 = MathLecture(
-        title="Sample Lecture",
-        filename="sample.mp4",
-        youtube_link="https://youtube.com/sample",
-        timecode_start="00:00:00",
-        timecode_end="01:00:00",
-        math_branch="Algebra",
-        difficulty_level="Intermediate"
-    )
-
-    lecture2 = MathLecture(
-        title="Sample Lecture2",
-        filename="sample2.mp4",
-        youtube_link="https://youtube.com/sample2",
-        timecode_start="00:00:00",
-        timecode_end="01:10:00",
-        math_branch="Geometry",
-        difficulty_level="Intermediate"
-    )
-    try:
-        lecture1 = lecture_repo.add_lecture(lecture1)
-        print(lecture1)
-        lecture2 = lecture_repo.add_lecture(lecture2)
-        print(lecture2)
-    except Exception as e:
-        cur = conn.execute('''SELECT * FROM math_branches''')
-        print(cur.fetchall())
-    conn.close()
