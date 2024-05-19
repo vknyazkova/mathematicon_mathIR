@@ -13,7 +13,7 @@ class LectureRepository:
 
     def connect(self):
         if self.conn is None:
-            self.conn = sqlite3.connect(self.dp_path)
+            self.conn = sqlite3.connect(self.dp_path, check_same_thread=True)
 
     def close(self):
         if self.conn is not None:
