@@ -1,4 +1,5 @@
-from typing import List, Optional
+import os
+from typing import List, Optional, Union
 
 from spacy import Language
 
@@ -13,10 +14,19 @@ class LectureTranscriptService:
         self.transcript_repo = transcript_repo
         self.nlp = nlp
 
+        if 'conllu_formatter' not in [pipe[0] for pipe in self.nlp.pipeline]:
+            self.nlp.add_pipe("conll_formatter", last=True, config={'include_headers': True})
+
     def parse_transcript(self,
                          transcript: str,
-                         text_id: Optional[int] = None) -> List[Sentence]:
+                         text_id: Optional[int] = None,
+                         save_to_conllu: Optional[Union[str, os.PathLike]] = None) -> List[Sentence]:
+
         doc = self.nlp(transcript)
+        if save_to_conllu is not None:
+            with open(save_to_conllu, "w", encoding="utf-8") as f:
+                f.write(doc._.conll_str)
+                
         sentences = []
         for i, sent in enumerate(doc.sents):
             lemmas = []
