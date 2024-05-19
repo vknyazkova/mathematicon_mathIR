@@ -5,7 +5,7 @@ from dataclasses import dataclass
 
 from spacy import Language
 
-from .html_models import HTMLSpan, HTMLWord, HTMLsentence, QueryInfo
+from .html_models import HTMLSpan, HTMLWord, HTMLSentence, QueryInfo
 from .database import WebDBHandler
 
 
@@ -53,6 +53,7 @@ class TextSearch:
         similar_sents = self.db.get_sent_by_lemmatized_query(lemmatized_query)
         reg_ex = r"\s?([А-Яа-яёЁ]+)?\s?".join(lemmatized_query)  # можно одно слово между не из запроса
         reg_ex = r"((?<=^)|(?<=\s))" + reg_ex + r"(?=$|\s)"  # чтобы не находились в середине слова
+        print(reg_ex)
         matching_sents = []
         for sent in similar_sents:
             matches = [m.span() for m in re.finditer(reg_ex, sent['lemmatized'])]
@@ -142,13 +143,13 @@ class TextSearch:
     def create_html_sentences(self,
                              userid: int,
                              query_info: QueryInfo,
-                             selected_sents: Iterable[SentenceMatch]) -> Iterable[HTMLsentence]:
+                             selected_sents: Iterable[SentenceMatch]) -> Iterable[HTMLSentence]:
         html_sentences = []
         user_favs, selected_sents = self.sort_sents_by_favourites(userid, selected_sents)
         for sent in selected_sents:
             sent_info = self.db.sent_info(sent.sent_id)
             left, right = self.db.sent_context(sent_info["text_id"], sent_info["pos_in_text"])
-            html_sentence = HTMLsentence(
+            html_sentence = HTMLSentence(
                 id=sent.sent_id,
                 left=left,
                 right=right,
@@ -200,7 +201,7 @@ class TextSearch:
     def search(self,
                query: str,
                userid: int,
-               search_type: str = 'lemma') -> Tuple[QueryInfo, Iterable[HTMLsentence]]:
+               search_type: str = 'lemma') -> Tuple[QueryInfo, Iterable[HTMLSentence]]:
         query_info = self.create_query_info(query)
         if search_type == 'lemma':
             matching_sents = self.select_sentences([t.lemma for t in query_info.tokens])

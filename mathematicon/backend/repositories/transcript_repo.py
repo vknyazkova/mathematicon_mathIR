@@ -6,11 +6,42 @@ from ..model import Sentence, Token
 
 
 class TranscriptRepository:
+
+    sentence_mapper = {
+        'id': 'sentence_id',
+        'text_id': 'lecture_id',
+        'pos_in_text': 'position_in_text',
+        'sent': 'sentence_text',
+        'lemmatized': 'lemmatized_sentence',
+        'timecode': 'timecode'
+    }
+
+    token_mapper = {
+        'id': 'token_id',
+        'sent_id': 'sentence_id',
+        'pos_in_sent': 'position_in_sentence',
+        'token_text': 'token'
+    }
+
     def __init__(self,
                  db_path: str,
                  db_conn: Optional[sqlite3.Connection] = None):
         self.db_path = db_path
         self.conn = db_conn
+
+    @staticmethod
+    def sentence_mapper_factory(cursor: sqlite3.Cursor,
+                                row) -> Sentence:
+        fields = [column[0] for column in cursor.description]
+        attrs = {key: value for key, value in zip(fields, row)}
+        return Sentence(**attrs)
+
+    @staticmethod
+    def token_mapper_factory(cursor: sqlite3.Cursor,
+                             row) -> Token:
+        fields = [column[0] for column in cursor.description]
+        attrs = {key: value for key, value in zip(fields, row)}
+        return Token(**attrs)
 
     def connect(self):
         if self.conn is None:
@@ -28,22 +59,9 @@ class TranscriptRepository:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
 
-    def create_tables(self,
-                      foreign_key_tables: bool = False):
+    def create_tables(self):
         self.connect()
         cursor = self.conn.cursor()
-
-        cursor.execute('''
-        CREATE TABLE IF NOT EXISTS texts (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT,
-            filename TEXT,
-            youtube_link TEXT,
-            timecode_start TEXT,
-            timecode_end TEXT,
-            math_branch_id INTEGER,
-            level_id INTEGER
-        )''')
 
         cursor.execute('''
         CREATE TABLE IF NOT EXISTS sents (
@@ -120,7 +138,6 @@ class TranscriptRepository:
         )''')
 
         self.conn.commit()
-
 
     def _add_sentence(self,
                       sentence: Sentence):
@@ -205,7 +222,7 @@ class TranscriptRepository:
             VALUES (?, ?, ?)''', (token_id, category_id, value_id))
 
     def _add_token(self,
-                   token: Token):
+                   token: Token) -> Token:
         lemma_id = self._get_lemma_id(token.lemma)
         pos_id = self._get_pos_id(token.pos_tag)
         cur = self.conn.execute('''
@@ -221,58 +238,115 @@ class TranscriptRepository:
             lemma_id,
             pos_id
         ))
-        token_id = cur.fetchone()[0]
-        self._add_morph_info(token_id, token.morph_annotation)
+        token.token_id = cur.fetchone()[0]
+        if token.morph_annotation:
+            self._add_morph_info(token.token_id, token.morph_annotation)
+        return token
 
-    def add_transcript(self, sentences: List[Sentence]):
+    def add_transcript(self, sentences: List[Sentence]) -> List[Sentence]:
         self.connect()
         with self.conn:
-            for sentence in sentences:
-                sent_id = self._add_sentence(sentence)
-                for token in sentence.tokens:
-                    token.sentence_id = sent_id
-                    self._add_token(token)
+            for i in range(len(sentences)):
+                sentences[i].sentence_id = self._add_sentence(sentences[i])
+                for j in range(len(sentences[i].tokens)):
+                    sentences[i].tokens[j].sentence_id = sentences[i].sentence_id
+                    sentences[i].tokens[j] = self._add_token(sentences[i].tokens[j])
+        return sentences
+
+    def fetch_tokens_info(self,
+                             sentence: Sentence) -> Sentence:
+        self.connect()
+        cur = self.conn.execute('''
+        WITH MorphFeatures AS (
+        SELECT
+            token_id,
+            GROUP_CONCAT(mc.name || '=' || mv.name, '|') AS morph_features
+        FROM
+            morph_features mf 
+        JOIN morph_categories mc ON mf.category_id = mc.id
+        JOIN morph_values mv ON mf.value_id = mv.id
+        GROUP BY
+            token_id
+        )
+        SELECT
+            tokens.id AS token_id,
+            tokens.sent_id AS sentence_id,
+            tokens.pos_in_sent AS position_in_sentence,
+            tokens.token AS token_text,
+            tokens.whitespace AS whitespace,
+            l.name AS lemma,
+            p.name AS pos_tag,
+            tokens.char_start AS char_offset_start,
+            tokens.char_end AS char_offset_end,
+            MorphFeatures.morph_features AS morph_annotation
+        FROM
+            tokens
+        JOIN lemmas l ON tokens.lemma_id = l.id
+        JOIN pos p ON tokens.pos_id = p.id
+        LEFT JOIN MorphFeatures ON tokens.id = MorphFeatures.token_id
+        WHERE
+            tokens.sent_id = ?
+        ORDER BY
+            tokens.pos_in_sent''', (sentence.sentence_id,))
+        cur.row_factory = self.token_mapper_factory
+        sentence.tokens = cur.fetchall()
+        return sentence
+
 
     def search_lemmatized(self, lemmatized_query: List[str]) -> List[Sentence]:
-        ...
+        self.connect()
+        pattern = '%' + '%'.join(lemmatized_query) + '%'
+        cur = self.conn.execute('''
+        SELECT 
+            s.id as sentence_id,
+            s.text_id as lecture_id,
+            s.pos_in_text as position_in_text,
+            s.sent as sentence_text,
+            s.lemmatized as lemmatized_sentence,
+            s.timecode as timecode_start
+        FROM sents s
+        WHERE s.lemmatized LIKE ?''', (pattern,))
+        cur.row_factory = self.sentence_mapper_factory
+        sentences = cur.fetchall()
+        for i in range(len(sentences)):
+            sentences[i] = self.fetch_tokens_info(sentences[i])
+        return sentences
 
     def search_phrase(self, phrase: str) -> List[Sentence]:
         ...
 
-    def sentence_context(self, sentence: Sentence) -> Tuple[Optional[Sentence], Optional[Sentence]]:
+    def sentence_context(self, sentence: Sentence) -> Tuple[Optional[str], Optional[str]]:
         text_id = sentence.lecture_id
         pos_in_text = sentence.position_in_text
-        with closing(sqlite3.connect(self.db_path)) as conn:
-            cur = conn.execute('''
-            SELECT sents.sent
-            FROM sents
-            WHERE text_id = :text_id
-            AND (pos_in_text = :pos_in_text - 1)
-            ''', {'text_id': text_id, 'pos_in_text': pos_in_text})
-            cur.row_factory = self.one_column_factory
-            left = cur.fetchone()
-            cur = self.conn.execute(
-                """
-                    SELECT sents.sent
-                    FROM sents
-                    WHERE text_id = :text_id
-                    AND (pos_in_text = :pos_in_text + 1)
-                    """,
-                {"text_id": text_id, "pos_in_text": pos_in_text},
-            )
-            cur.row_factory = self.one_column_factory
-            right = cur.fetchone()
-        return left, right
+
+        self.connect()
+        cur = self.conn.execute('''
+        SELECT sents.sent, iif(sents.pos_in_text = :pos_in_text - 1, 0, 1)
+        FROM sents
+        WHERE text_id = :text_id
+        AND pos_in_text = :pos_in_text - 1
+        ''', {'text_id': text_id, 'pos_in_text': pos_in_text})
+
+        context = cur.fetchall()
+        context_sents = {}
+        if context is not None:
+            for s in context:
+                if s[1] == 1:
+                    context_sents['right'] = s[0]
+                else:
+                    context_sents['left'] = s[0]
+        return context_sents.get('left', None), context_sents.get('right', None)
 
     def get_sentence_yb_link(self, sentence: Sentence) -> str:
-        ...
+        # TODO: maybe better move to search service, because info about youtube lecture should be handled in lecture_repo
+
+        self.connect()
+        cur = self.conn.execute('''
+        SELECT t.youtube_link || '&t=' || IFNULL(sents.timecode, t.timecode_start) || 's'
+        FROM sents
+        LEFT JOIN texts t on sents.text_id = t.id
+        WHERE sents.id = ?''', (sentence.sentence_id,))
+        return cur.fetchone()[0]
 
 
-if __name__ == '__main__':
-    db_path = ':memory:'
-    conn = sqlite3.connect(db_path)
-    lecture_repo = TranscriptRepository(db_path, conn)
 
-    lecture_repo.create_tables()
-    cur = conn.execute('''SELECT name FROM sqlite_master WHERE type='table';''')
-    print(cur.fetchall())
