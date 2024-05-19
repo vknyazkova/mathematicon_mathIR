@@ -2,6 +2,8 @@ import sqlite3
 from typing import List, Tuple, Optional
 from contextlib import closing
 
+from tqdm import tqdm
+
 from ..model import Sentence, Token
 
 
@@ -45,7 +47,7 @@ class TranscriptRepository:
 
     def connect(self):
         if self.conn is None:
-            self.conn = sqlite3.connect(self.db_path)
+            self.conn = sqlite3.connect(self.db_path, check_same_thread=True)
 
     def close(self):
         if self.conn is not None:
@@ -253,21 +255,10 @@ class TranscriptRepository:
                     sentences[i].tokens[j] = self._add_token(sentences[i].tokens[j])
         return sentences
 
-    def fetch_tokens_info(self,
-                             sentence: Sentence) -> Sentence:
+    def _fetch_tokens_info(self,
+                           sentence: Sentence) -> Sentence:
         self.connect()
         cur = self.conn.execute('''
-        WITH MorphFeatures AS (
-        SELECT
-            token_id,
-            GROUP_CONCAT(mc.name || '=' || mv.name, '|') AS morph_features
-        FROM
-            morph_features mf 
-        JOIN morph_categories mc ON mf.category_id = mc.id
-        JOIN morph_values mv ON mf.value_id = mv.id
-        GROUP BY
-            token_id
-        )
         SELECT
             tokens.id AS token_id,
             tokens.sent_id AS sentence_id,
@@ -277,13 +268,11 @@ class TranscriptRepository:
             l.name AS lemma,
             p.name AS pos_tag,
             tokens.char_start AS char_offset_start,
-            tokens.char_end AS char_offset_end,
-            MorphFeatures.morph_features AS morph_annotation
+            tokens.char_end AS char_offset_end
         FROM
             tokens
         JOIN lemmas l ON tokens.lemma_id = l.id
         JOIN pos p ON tokens.pos_id = p.id
-        LEFT JOIN MorphFeatures ON tokens.id = MorphFeatures.token_id
         WHERE
             tokens.sent_id = ?
         ORDER BY
@@ -291,7 +280,6 @@ class TranscriptRepository:
         cur.row_factory = self.token_mapper_factory
         sentence.tokens = cur.fetchall()
         return sentence
-
 
     def search_lemmatized(self, lemmatized_query: List[str]) -> List[Sentence]:
         self.connect()
@@ -309,11 +297,27 @@ class TranscriptRepository:
         cur.row_factory = self.sentence_mapper_factory
         sentences = cur.fetchall()
         for i in range(len(sentences)):
-            sentences[i] = self.fetch_tokens_info(sentences[i])
+            sentences[i] = self._fetch_tokens_info(sentences[i])
         return sentences
 
     def search_phrase(self, phrase: str) -> List[Sentence]:
-        ...
+        self.connect()
+        pattern = '%' + phrase + '%'
+        cur = self.conn.execute('''
+                SELECT 
+                    s.id as sentence_id,
+                    s.text_id as lecture_id,
+                    s.pos_in_text as position_in_text,
+                    s.sent as sentence_text,
+                    s.lemmatized as lemmatized_sentence,
+                    s.timecode as timecode_start
+                FROM sents s
+                WHERE s.sent LIKE ?''', (pattern,))
+        cur.row_factory = self.sentence_mapper_factory
+        sentences = cur.fetchall()
+        for i in range(len(sentences)):
+            sentences[i] = self._fetch_tokens_info(sentences[i])
+        return sentences
 
     def sentence_context(self, sentence: Sentence) -> Tuple[Optional[str], Optional[str]]:
         text_id = sentence.lecture_id
