@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta charset="utf-8" />
     <meta property="twitter:card" content="summary_large_image" />
-    <link rel="stylesheet" href="static/css/style.css" />
-    <link href="static/css/account.css" rel="stylesheet" />
+    <link rel="stylesheet" href="../static/css/style.css" />
+    <link href="../static/css/account.css" rel="stylesheet" />
     <style data-tag="reset-style-sheet">
       html {  line-height: 1.15;}body {  margin: 0;}* {  box-sizing: border-box;  border-width: 0;  border-style: solid;}p,li,ul,pre,div,h1,h2,h3,h4,h5,h6,figure,blockquote,figcaption {  margin: 0;  padding: 0;}button {  background-color: transparent;}button,input,optgroup,select,textarea {  font-family: inherit;  font-size: 100%;  line-height: 1.15;  margin: 0;}button,select {  text-transform: none;}button,[type="button"],[type="reset"],[type="submit"] {  -webkit-appearance: button;}button::-moz-focus-inner,[type="button"]::-moz-focus-inner,[type="reset"]::-moz-focus-inner,[type="submit"]::-moz-focus-inner {  border-style: none;  padding: 0;}button:-moz-focus,[type="button"]:-moz-focus,[type="reset"]:-moz-focus,[type="submit"]:-moz-focus {  outline: 1px dotted ButtonText;}a {  color: inherit;  text-decoration: inherit;}input {  padding: 2px 4px;}img {  display: block;}html { scroll-behavior: smooth  }
     </style>
@@ -30,7 +30,7 @@
       }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script type="text/javascript" src="static/js/scripts.js"></script>
+    <script type="text/javascript" src="../static/js/scripts.js"></script>
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&amp;display=swap"
@@ -47,7 +47,7 @@
           >
             <img
               alt="logo"
-              src="static/images/logo.svg"
+              src="../static/images/logo.svg"
               class="navbar-interactive-logo"
             />
             <div
@@ -186,20 +186,20 @@
             </div>
             <div id="starred" class="account-container-starred hide">
               <div class="account-container3">
-                {% for example in favs %}
+                {% for fav in favs %}
                 <div class="account-starred-line">
                   <div class="text-arrow">
-                    <a class="account-starred-query" href="/result_{{ main_lan }}?{{ example[2] }}">{{ example[1] }}</a>
-                    <button id="{{ example[0] }}" class="arrow up" onclick="show_example(this.id)"></button>
+                    <a class="account-starred-query" href="{{ fav.query_link }}">{{ fav.query_text }}</a>
+                    <button id="{{ fav.query_text }}" class="arrow up" onclick="show_example(this.id)"></button>
                   </div>
-                  <div id="example-{{ example[0] }}" style="display: none; flex-direction: column">
-                    {% for sent in example[3] %}
+                  <div id="example-{{ fav.query_text }}" style="display: none; flex-direction: column">
+                    {% for sent in fav.sentences %}
                     <div class="account-starred-bubble">
                       <p class="account-text04">
-                        {{sent[1]}}
+                        {{ sent[1] }}
                       </p>
                       <div class="account-container4">
-                        <button id="{{sent[0]}}" class="account-icon plus minus" onclick="send_id(this.id)"></button>
+                        <button id="{{ sent[0] }}" class="account-icon plus minus" onclick="send_id('{{ sent[0] }}', '{{ fav.query_text }}', '{{ fav.query_link }}')"></button>
                       </div>
                     </div>
                     {% endfor %}
@@ -211,7 +211,7 @@
             <div id="history" class="account-container-history hide">
               {% for item in history_list %}
               <div class="account-container5">
-                <a href="/result_{{ main_lan }}?{{ item[1] }}" class="account-history-query">{{ item[0] }}</a>
+                <a href="{{ item.link }}" class="account-history-query">{{ item.query }}</a>
               </div>
               {% endfor %}
             </div>
@@ -294,21 +294,22 @@ $(".switchlang").click(function() {
       }
     </script>
   <script>
-    function send_id(clicked_id) {
-      var element = document.getElementById(clicked_id);
-      var sent_id = clicked_id;
-      if (element.classList.contains('minus')) {
-       var method = "delete";
-       }else{
-       var method = "add";
-       };
-      let data = {"id": sent_id, "method": method};
-      fetch("/favourites/", {
-        method: "POST",
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(data)
-      });
-    }
+      function send_id(clicked_id, query_text, query_link) {
+        var element = document.getElementById(clicked_id);
+        var sent_id = clicked_id;
+        var method = element.classList.contains('minus') ? "delete" : "add";
+        let data = {
+          "id": sent_id,
+          "method": method,
+          "query_text": query_text,
+          "query_link": query_link
+        };
+        fetch("/favourites/", {
+          method: "POST",
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(data)
+        });
+      }
   </script>
   <script>
     function show_container(text){
