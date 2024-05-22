@@ -10,12 +10,7 @@ class TestTranscriptRepository(unittest.TestCase):
         self.conn = sqlite3.connect(':memory:')
         self.repo = TranscriptRepository(db_path=':memory:', db_conn=self.conn)
         self.repo.create_tables()
-
-    def tearDown(self):
-        self.conn.close()
-
-    def test_add_transcript(self):
-        transcript = [
+        self.transcript = [
             Sentence(
                 lecture_id=1,
                 position_in_text=1,
@@ -62,7 +57,11 @@ class TestTranscriptRepository(unittest.TestCase):
             )
         ]
 
-        sentences = self.repo.add_transcript(transcript)
+    def tearDown(self):
+        self.conn.close()
+
+    def test_add_transcript(self):
+        sentences = self.repo.add_transcript(self.transcript)
 
         cur = self.conn.cursor()
         cur.execute("SELECT COUNT(*) FROM sents")
@@ -85,3 +84,8 @@ class TestTranscriptRepository(unittest.TestCase):
         self.assertEqual(mc_count, 10, "There should be 10 unique morph categories.")
         self.assertEqual(mv_count, 15, "There should be 15 unique morph values.")
 
+    def get_sentence_by_id(self):
+        sents = self.repo.add_transcript(self.transcript)
+        sent1 = self.repo.get_sentence_by_id(1)
+        self.assertIsInstance(sent1, Sentence)
+        self.assertEqual(sent1.sentence_id, 1)

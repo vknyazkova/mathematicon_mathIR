@@ -1,18 +1,22 @@
 import unittest
+from unittest.mock import MagicMock
 
 from spacy import Language
 
 from mathematicon.backend.services.search_service import SearchService
-from mathematicon.backend.repositories.mock_repos import MockLectureRepository, MockTranscriptRepository
+from mathematicon.backend.repositories.lecture_repo import LectureRepository
+from mathematicon.backend.repositories.transcript_repo import TranscriptRepository
 from mathematicon.backend.models.html_models import QueryInfo, HTMLWord, HTMLSpan
 from mathematicon.backend.model import Token
 
 
-class MockLanguage(Language):
-    ...
-
-
 class TestSearchService(unittest.TestCase):
+    def setUp(self):
+        mock_nlp = MagicMock(spec=Language)
+        mosk_lecure_repo = MagicMock(spec=LectureRepository)
+        mosk_transcript_repo = MagicMock(spec=TranscriptRepository)
+        self.search_service = SearchService(mock_nlp, mosk_lecure_repo, mosk_transcript_repo)
+
     def test_find_pattern_in_target(self):
         pattern1 = ['три']
         sent1 = ['модуль', 'числа', 'минус', 'три', 'равен', 'три']
@@ -20,9 +24,9 @@ class TestSearchService(unittest.TestCase):
         pattern2 = ['два', 'три']
         sent2 = ['два', 'три', 'мочь', 'принимать', 'значение', 'ноль', ',', 'один', ',', 'два', 'и', 'три']
 
-        self.assertEqual([[3], [5]], SearchService.find_pattern_in_target(pattern1, sent1))
-        self.assertEqual([[0, 1], [9, 11]], SearchService.find_pattern_in_target(pattern2, sent2, max_skips=1))
-        self.assertEqual([[0, 1]], SearchService.find_pattern_in_target(pattern2, sent2, max_skips=0))
+        self.assertEqual([[3], [5]], self.search_service.find_pattern_in_target(pattern1, sent1))
+        self.assertEqual([[0, 1], [9, 11]], self.search_service.find_pattern_in_target(pattern2, sent2, max_skips=1))
+        self.assertEqual([[0, 1]], self.search_service.find_pattern_in_target(pattern2, sent2, max_skips=0))
 
     def test__color_tokens(self):
         query_info = QueryInfo(
@@ -48,12 +52,9 @@ class TestSearchService(unittest.TestCase):
             'green',  # три
             ]
 
-        search_service = SearchService(MockLanguage(), MockLectureRepository(), MockTranscriptRepository())
-        self.assertEqual(expected, search_service._color_tokens(n_tokens, query_info, match))
+        self.assertEqual(expected, self.search_service._color_tokens(n_tokens, query_info, match))
 
     def test__html_tokens_generator(self):
-        search_service = SearchService(MockLanguage(), MockLectureRepository(), MockTranscriptRepository())
-
         tokens = [
             Token(token_text='Соответственно', whitespace=False, pos_tag='ADV', lemma='Соответственно',
                   morph_annotation='Degree=Pos', position_in_sentence=0, char_offset_start=0, char_offset_end=14),
@@ -87,7 +88,7 @@ class TestSearchService(unittest.TestCase):
             HTMLSpan(text='».')
         ]
 
-        generated_html_tokens = list(search_service._html_tokens_generator(tokens, colors))
+        generated_html_tokens = list(self.search_service._html_tokens_generator(tokens, colors))
         self.assertEqual(result, generated_html_tokens)
 
         tokens2 = [
@@ -112,5 +113,5 @@ class TestSearchService(unittest.TestCase):
             HTMLSpan(text='.'),
         ]
 
-        generated_html_tokens2 = list(search_service._html_tokens_generator(tokens2, colors2))
+        generated_html_tokens2 = list(self.search_service._html_tokens_generator(tokens2, colors2))
         self.assertEqual(result2, generated_html_tokens2)
