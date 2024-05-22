@@ -105,8 +105,8 @@ class SearchService:
             max_skips = 0
         return self.find_pattern_in_target(pattern, target, max_skips)
 
-    def _color_tokens(self,
-                      n_tokens: int,
+    @staticmethod
+    def _color_tokens(n_tokens: int,
                       query_info: QueryInfo,
                       matches: List[List[int]]) -> List[str]:
         # matches = [[qw1, qw2, qw3], [qw1, qw2, qw3]]
@@ -174,4 +174,3 @@ class SearchService:
     def searchByFormula(self,
                         tex_formula: str) -> Tuple[QueryInfo, List[HTMLSentence]]:
         ...
-    

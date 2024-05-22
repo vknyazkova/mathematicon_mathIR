@@ -2,13 +2,13 @@
 <html lang="en">
   <head>
     <title>Mathematicon</title>
-     <link rel="shortcut icon" href="static/images/favicon.ico"/>
+     <link rel="shortcut icon" href="../static/images/favicon.ico"/>
     <meta property="og:title" content="result - math" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta charset="utf-8" />
     <meta property="twitter:card" content="summary_large_image" />
-    <link rel="stylesheet" href="static/css/style.css" />
-    <link href="static/css/result.css" rel="stylesheet" />
+    <link rel="stylesheet" href="../static/css/style.css" />
+    <link href="../static/css/result.css" rel="stylesheet" />
     <style data-tag="reset-style-sheet">
       html {  line-height: 1.15;}body {  margin: 0;}* {  box-sizing: border-box;  border-width: 0;  border-style: solid;}p,li,ul,pre,div,h1,h2,h3,h4,h5,h6,figure,blockquote,figcaption {  margin: 0;  padding: 0;}button {  background-color: transparent;}button,input,optgroup,select,textarea {  font-family: inherit;  font-size: 100%;  line-height: 1.15;  margin: 0;}button,select {  text-transform: none;}button,[type="button"],[type="reset"],[type="submit"] {  -webkit-appearance: button;}button::-moz-focus-inner,[type="button"]::-moz-focus-inner,[type="reset"]::-moz-focus-inner,[type="submit"]::-moz-focus-inner {  border-style: none;  padding: 0;}button:-moz-focus,[type="button"]:-moz-focus,[type="reset"]:-moz-focus,[type="submit"]:-moz-focus {  outline: 1px dotted ButtonText;}a {  color: inherit;  text-decoration: inherit;}input {  padding: 2px 4px;}img {  display: block;}html { scroll-behavior: smooth  }
     </style>
@@ -32,7 +32,7 @@
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script type="text/javascript" src="static/js/scripts.js"></script>
+    <script type="text/javascript" src="../static/js/scripts.js"></script>
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&amp;display=swap"
@@ -50,7 +50,7 @@
           >
             <img
               alt="logo"
-              src="static/images/logo.svg"
+              src="../static/images/logo.svg"
               class="navbar-interactive-logo"
             />
             <div
@@ -153,7 +153,7 @@
             </div>
           </header>
         </div>
-        <form action="/result_{{main_lan}}" method="get" name="form" class="search-search-res">
+        <form action="/result_{{ main_lan }}" method="get" name="form" class="search-search-res">
 
               <div class="search-container-res">
                 <div class="search-container1-res">
@@ -181,10 +181,10 @@
           <div class="result-container03">
             <h3 class="result-text04">
               {% for word in query_info.tokens %}
-                 <span class="{{word.color}}">{{word.text}} </span>
-              {%endfor%}
+                 <span class="{{ word.color }}">{{ word.text }} </span>
+              {% endfor %}
             </h3>
-            <a class="result-icon02" onclick="makeSound()"><img src="static/images/speaker.png" width="auto" height="20px"></a>
+            <a class="result-icon02" onclick="makeSound()"><img src="../static/images/speaker.png" width="auto" height="20px"></a>
           </div>
         </div>
         <div class="result-row1">
@@ -199,38 +199,36 @@
           {% for word in query_info.tokens %}
           <div class="result-col1">
             <div class="result-container-nf-query">
-              <span class="result-text07">{{word.lemma}}</span>
+              <span class="result-text07">{{ word.lemma }}</span>
             </div>
             <div class="result-container-pos-query">
-              <span class="result-text08">{{word.pos}}</span>
+              <span class="result-text08">{{ word.pos }}</span>
             </div>
           </div>
-          {%endfor%}
+          {% endfor %}
         </div>
         <div class="result-container-example">
-          <h2 class="result-text-example-n" data-ru="Примеров найдено: {{sents_info|length}}" data-en="Examples found: {{sents_info|length}}"></h2>
+          <h2 class="result-text-example-n" data-ru="Примеров найдено: {{ sents_info|length }}" data-en="Examples found: {{ sents_info|length }}"></h2>
           <div class="result-container-list-examples">
             {% for sent in sents_info %}
             <div class="result-container-sent-bubble">
               <p class="result-text-sent">
-                {% if sent.left%}
-                <span id="context_b" class="text-in-bubble text-query context">{{sent.left}}</span>
+                {% if sent.left %}
+                <span id="context_b" class="text-in-bubble text-query context">{{ sent.left }}</span>
                 {% endif %}
                 <span class="text-query">
-                  {% for word in sent.tokens %}{% if word.html_type == 'plain'%}{{word.text}}{% else %}<abbr class="tooltip tooltip--top" data-tooltip="{{word.pos}}"><abbr class="tooltip tooltip--bottom {{word.color}}" data-tooltip="{{word.lemma}}">{{word.text}}</abbr></abbr>{% endif %}{%endfor%}
+                  {% for word in sent.tokens %}{% if word.html_type == 'plain'%}{{ word.text }}{% else %}<abbr class="tooltip tooltip--top" data-tooltip="{{ word.pos }}"><abbr class="tooltip tooltip--bottom {{ word.color }}" data-tooltip="{{ word.lemma }}">{{ word.text }}</abbr></abbr>{% endif %}{% endfor %}
                 </span>
-                {% if sent.right%}
-                <span id="context_a" class="text-in-bubble text-query context">{{sent.right}}</span>
+                {% if sent.right %}
+                <span id="context_a" class="text-in-bubble text-query context">{{ sent.right }}</span>
                 {% endif %}
                 <span onclick="ShowHideContext()" class="context-btn text-in-bubble"><...></span>
               </p>
               <div class="result-container-sent-icons">
-                {% if authorized %}
-                  {% if sent.star %}
-                    <button id="{{ sent.id }}" class="result-icon05 plus" onclick="send_id(this.id)"></button>
-                  {% else %}
-                    <button id="{{ sent.id }}" class="result-icon05 plus minus" onclick="send_id(this.id)"></button>
-                  {% endif %}
+                {% if sent.star == 'true' %}
+                  <button id="{{ sent.id }}" class="result-icon05 plus minus" onclick="send_id(this.id, window.location.pathname + window.location.search)"></button>
+                {% else %}
+                  <button id="{{ sent.id }}" class="result-icon05 plus" onclick="send_id(this.id, window.location.pathname + window.location.search)"></button>
                 {% endif %}
                 <!-- ютуб -->
                 {% if sent.yb_link %}
@@ -244,7 +242,7 @@
                 {% endif %}
               </div>
             </div>
-            {%endfor%}
+            {% endfor %}
 
             </div>
           </div>
@@ -331,50 +329,23 @@ $(".switchlang").click(function() {
       $(this).toggleClass("minus")  ;
     })
   </script>
-  <script>
-    function send_id(clicked_id) {
+<script>
+    function send_id(clicked_id, query_link) {
         var element = document.getElementById(clicked_id);
         var sent_id = clicked_id;
-
-        // Retrieve query parameters from the current URL
-        var urlParams = new URLSearchParams(window.location.search);
-        var query = urlParams.get("query");
-        var query_type = urlParams.get("query_type");
-        var search_type = urlParams.get("search_type");
-
-        if (element.classList.contains('minus')) {
-            var method = "delete";
-        } else {
-            var method = "add";
-        };
-
-        // Build the data object
+        var method = element.classList.contains('minus') ? "delete" : "add";
         let data = {
             "id": sent_id,
             "method": method,
-            "query": query,
+            "query_link": query_link
         };
-
-        // Add query_type to data if they exist
-        if (query_type) {
-            data.query_type = query_type;
-        }
-
-        // Add search_type to data if it exists
-        if (search_type) {
-            data.search_type = search_type;
-        }
-
-        // Construct the URL with query parameters
-        var url = "/favourites/";
-
-        fetch(url, {
+        fetch("/favourites/", {
             method: "POST",
-            headers: { 'Content-Type': 'application/json' },
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(data)
         });
     }
-  </script>
+</script>
     <script>
     if (!{{starring}}) {
       var buttons = document.getElementsByClassName("plus");

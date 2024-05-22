@@ -1,4 +1,3 @@
-import numpy as np
 from pydantic import BaseModel, Field
 from typing import List, Optional
 
@@ -37,12 +36,12 @@ class Sentence(BaseModel):
     tokens: List[Token] = Field(default_factory=list)
 
 
-class AnnotationFragment(BaseModel):
-    annotation_id: Optional[int] = Field(None, description='Annotation ID in database')
-    sentence_id: int
-    char_start: int
-    char_ent: int
-    token_ids: List[int] = Field(default_factory=list)
+# class AnnotationFragment(BaseModel):
+#     annotation_id: Optional[int] = Field(None, description='Annotation ID in database')
+#     sentence_id: int
+#     char_start: int
+#     char_ent: int
+#     token_ids: List[int] = Field(default_factory=list)
 
 #
 # class FormulaAnnotation(BaseModel):
@@ -51,23 +50,25 @@ class AnnotationFragment(BaseModel):
 #     embedding_vector: np.ndarray
 
 
-class User(BaseModel):
+class UserInfo(BaseModel):
     user_id: Optional[int] = Field(None, description='User ID in database')
     username: str
     email: str
     password_hash: str
-    salt: str
+    salt: bytes
 
 
 class SearchHistory(BaseModel):
     search_id: Optional[int] = Field(None, description='Search ID in database')
     user_id: int
-    timestamp: int
+    timestamp: str
     query: str
+    link: str
 
 
 class Favorites(BaseModel):
     favorite_id: Optional[int] = Field(None, description='Favorite ID in database')
     user_id: int
     query: str
+    link: Optional[str]
     sentence_id: int

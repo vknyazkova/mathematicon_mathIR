@@ -1,25 +1,14 @@
-from urllib.parse import unquote
+import datetime
+from urllib.error import HTTPError
 
 from flask import render_template, redirect, url_for, request
-from flask_login import current_user, login_required
+from flask_login import current_user
 
-from .app import app, nlp, webdb
-from ..backend.models.text_search import TextSearch
+from .app import app, webdb, search_service, user_service
+from ..backend.model import SearchHistory
 from ..backend.models.mathtag_search import MathtagSearch
-from ..backend.models.database import UserDBHandler
-from .. import DB_PATH
 
-from ..backend.repositories.lecture_repo import LectureRepository
-from ..backend.repositories.transcript_repo import TranscriptRepository
-from ..backend.services.search_service import SearchService
-
-text_search = TextSearch(webdb, nlp)
 mathtag_search = MathtagSearch(webdb)
-user_db = UserDBHandler(DB_PATH)
-
-lecture_repo = LectureRepository(DB_PATH)
-transcript_repo = TranscriptRepository(DB_PATH)
-search_service = SearchService(nlp, lecture_repo, transcript_repo)
 
 
 @app.route('/')
@@ -37,10 +26,16 @@ def main_page(lang):
 def result(lang):
     # func to redirect and get search params
     query = request.args["query"]
+    # TODO: turn inception_id to string repr
     if current_user.is_authenticated:
-        userid = current_user.id
-        query_string = unquote(request.query_string.decode("utf-8"))
-        user_db.add_history(userid, query_string)
+        userid = current_user.user_info.user_id
+        history = SearchHistory(
+            user_id=userid,
+            timestamp=datetime.datetime.now().isoformat(sep=' ', timespec='seconds'),
+            query=query,
+            link=request.url[request.url.rfind('/'):]
+        )
+        user_service.save_history(history)
         starring = "true"
     else:
         userid = None
@@ -54,13 +49,18 @@ def result(lang):
     elif request.args['search_type'] == 'tag':
         query_info, sents_info = mathtag_search.search(query, userid)
         hide_cap = 'true'
+    else:
+        raise HTTPError
+
+    if current_user.is_authenticated:
+        sents_info = user_service.personalise_search_results(current_user.user_info, search_results=sents_info)
+
     return render_template(
         "result.html",
         main_lan=lang,
         query_info=query_info,
         sents_info=sents_info,
         query=query,
-        authorized=True,
         starring=starring,
         hide_cap=hide_cap,
     )

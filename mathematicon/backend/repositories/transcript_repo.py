@@ -1,29 +1,10 @@
 import sqlite3
 from typing import List, Tuple, Optional
-from contextlib import closing
-
-from tqdm import tqdm
 
 from ..model import Sentence, Token
 
 
 class TranscriptRepository:
-
-    sentence_mapper = {
-        'id': 'sentence_id',
-        'text_id': 'lecture_id',
-        'pos_in_text': 'position_in_text',
-        'sent': 'sentence_text',
-        'lemmatized': 'lemmatized_sentence',
-        'timecode': 'timecode'
-    }
-
-    token_mapper = {
-        'id': 'token_id',
-        'sent_id': 'sentence_id',
-        'pos_in_sent': 'position_in_sentence',
-        'token_text': 'token'
-    }
 
     def __init__(self,
                  db_path: str,
@@ -352,5 +333,20 @@ class TranscriptRepository:
         WHERE sents.id = ?''', (sentence.sentence_id,))
         return cur.fetchone()[0]
 
+    def get_sentence_by_id(self, sentence_id: int) -> Sentence:
+        self.connect()
+        cur = self.conn.execute(
+            '''SELECT 
+            s.id as sentence_id,
+            s.text_id as lecture_id,
+            s.pos_in_text as position_in_text,
+            s.sent as sentence_text,
+            s.lemmatized as lemmatized_sentence,
+            s.timecode as timecode_start
+            FROM sents s
+            WHERE s.id = :sentence_id''', (sentence_id,)
+        )
+        cur.row_factory = self.sentence_mapper_factory
+        return cur.fetchone()
 
 
