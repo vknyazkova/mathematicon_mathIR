@@ -1,18 +1,21 @@
-from typing import Tuple, List, Optional, Generator
+from typing import Tuple, List, Optional, Generator, Union
 
 from spacy import Language
 
 from ..services.lecture_transcript_service import LectureTranscriptService
-from ..models.html_models import HTMLWord, HTMLSentence, QueryInfo, HTMLSpan
-from ..model import Sentence, Token
+from ..services.formula_annotation_service import FormulaAnnotationService
+from ..models.html_models import HTMLWord, HTMLSentence, QueryInfo, HTMLSpan, HTMLAnnotated
+from ..model import Sentence, Token, AnnotationFragment
 
 
 class SearchService:
     def __init__(self,
                  nlp: Language,
-                 lecture_transcript_service: LectureTranscriptService):
+                 lecture_transcript_service: LectureTranscriptService,
+                 formula_service: FormulaAnnotationService):
         self.nlp = nlp
         self.lecture_transcript_service = lecture_transcript_service
+        self.formula_service = formula_service
 
     @staticmethod
     def find_pattern_in_target(pattern: List[str],
@@ -59,8 +62,8 @@ class SearchService:
             query_info.tokens.append(token)
         return query_info
 
-    def _html_tokens_generator(self,
-                               tokens: List[Token],
+    @staticmethod
+    def _html_tokens_generator(tokens: List[Token],
                                colors: List[str]) -> Generator[HTMLSpan, None, None]:
         """
         Generates HTML tokens based on token information.
@@ -137,6 +140,57 @@ class SearchService:
         )
         return html_sentence
 
+    @staticmethod
+    def generate_html_annotated_tokens(tokens: List[Token],
+                                       annot_fragment: AnnotationFragment) -> List[Union[HTMLAnnotated, HTMLSpan]]:
+        html_spans = []
+        annotated_tokens = []
+        non_annotated_tokens = []
+        for token in tokens:
+            if token.char_offset_end <= annot_fragment.char_end and token.char_offset_start >= annot_fragment.char_start:
+                if len(non_annotated_tokens) > 0:
+                    html_spans.extend(
+                        list(SearchService._html_tokens_generator(non_annotated_tokens, ['black' for _ in non_annotated_tokens])))
+                    non_annotated_tokens = []
+                annotated_tokens.append(token)
+            else:
+                if len(annotated_tokens) > 0:
+                    html_spans.append(
+                        HTMLAnnotated(
+                            annotation=annot_fragment.annotation.tex_formula,
+                            spans=list(SearchService._html_tokens_generator(annotated_tokens, ['black' for _ in  annotated_tokens]))
+                        )
+                    )
+                    annotated_tokens = []
+                non_annotated_tokens.append(token)
+        if len(non_annotated_tokens) > 0:
+            html_spans.extend(
+                list(SearchService._html_tokens_generator(non_annotated_tokens,
+                                                          ['black' for _ in non_annotated_tokens])))
+        elif len(annotated_tokens) > 0:
+            html_spans.append(
+                HTMLAnnotated(
+                    annotation=annot_fragment.annotation.tex_formula,
+                    spans=list(
+                        SearchService._html_tokens_generator(annotated_tokens, ['black' for _ in annotated_tokens]))
+                )
+            )
+        return html_spans
+
+    def _create_html_sentence_with_annotation(self,
+                                              sentence: Sentence,
+                                              annot_fragment: AnnotationFragment) -> HTMLSentence:
+        html_spans = self.generate_html_annotated_tokens(sentence.tokens, annot_fragment)
+        left_context, right_context = self.lecture_transcript_service.get_sentence_context(sentence)
+        return HTMLSentence(
+            id=sentence.sentence_id,
+            tokens=html_spans,
+            left=left_context,
+            right=right_context,
+            yb_link=self.lecture_transcript_service.get_sentence_yb_link(sentence),
+        )
+
+
     def _construct_search_result(self,
                                  query_info: QueryInfo,
                                  found_sents: List[Sentence],
@@ -168,4 +222,12 @@ class SearchService:
 
     def searchByFormula(self,
                         tex_formula: str) -> Tuple[QueryInfo, List[HTMLSentence]]:
+        # formula_fragments = self.formula_service.search_similar_formulas(tex_formula)
+        # sentences = {}
+        # html_sentences = []
+        # for frag in formula_fragments:
+        #     if frag.sentence_id not in sentences:
+        #         sentences[frag.sentence_id] = self.lecture_transcript_service.get_sentence_by_id(frag.sentence_id)
         ...
+
+

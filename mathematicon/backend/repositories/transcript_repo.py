@@ -333,7 +333,7 @@ class TranscriptRepository:
         WHERE sents.id = ?''', (sentence.sentence_id,))
         return cur.fetchone()[0]
 
-    def get_sentence_by_id(self, sentence_id: int) -> Sentence:
+    def get_sentence_by_id(self, sentence_id: int, tokens: bool = False) -> Sentence:
         self.connect()
         cur = self.conn.execute(
             '''SELECT 
@@ -347,6 +347,7 @@ class TranscriptRepository:
             WHERE s.id = :sentence_id''', (sentence_id,)
         )
         cur.row_factory = self.sentence_mapper_factory
-        return cur.fetchone()
-
-
+        sent = cur.fetchone()
+        if tokens:
+            sent = self._fetch_tokens_info(sent)
+        return sent
