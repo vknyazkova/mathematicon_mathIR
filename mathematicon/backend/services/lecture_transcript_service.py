@@ -80,6 +80,10 @@ class LectureTranscriptService:
         with self.transcript_repo:
             return self.transcript_repo.search_lemmatized(lemmatized_query)
 
+    def get_sentence_by_id(self, id: int) -> Sentence:
+        with self.transcript_repo:
+            return self.transcript_repo.get_sentence_by_id(id, tokens=True)
+
 
 if __name__ == '__main__':
     import spacy
