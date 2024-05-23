@@ -14,14 +14,12 @@ class HTMLWord(HTMLSpan):
     html_type: str = 'tooltip'
     pos: str = None
     lemma: str = None
-    char_start_: int = None
-    char_end_: int = None
 
 
 @dataclass
 class HTMLAnnotated:
     annotation: str
-    html_type: str = ''
+    html_type: str = 'annotation'
     spans: List[HTMLSpan] = field(default_factory=list)
 
 

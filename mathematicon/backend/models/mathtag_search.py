@@ -93,8 +93,6 @@ class MathtagSearch:
                 yield HTMLWord(text=token['token'],
                                pos=token['pos'],
                                lemma=token['lemma'],
-                               char_start_=token['char_start'],
-                               char_end_=token['char_end'],
                                color=token['color'])
             else:
                 plain_token.text += token['token']
