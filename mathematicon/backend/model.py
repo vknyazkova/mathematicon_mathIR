@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Sequence, Union
 
 
 class MathLecture(BaseModel):
@@ -36,18 +36,20 @@ class Sentence(BaseModel):
     tokens: List[Token] = Field(default_factory=list)
 
 
-# class AnnotationFragment(BaseModel):
-#     annotation_id: Optional[int] = Field(None, description='Annotation ID in database')
-#     sentence_id: int
-#     char_start: int
-#     char_ent: int
-#     token_ids: List[int] = Field(default_factory=list)
+class FormulaAnnotation(BaseModel):
+    fragment_id: Optional[int] = Field(None, description='Annotation fragment ID in database')
+    tex_formula: str
+    embedding_vector: Optional[Sequence[float]]
 
-#
-# class FormulaAnnotation(BaseModel):
-#     fragment_id: Optional[int] = Field(None, description='Annotation fragment ID in database')
-#     tex_formula: str
-#     embedding_vector: np.ndarray
+
+class AnnotationFragment(BaseModel):
+    annotation_id: Optional[int] = Field(None, description='Annotation ID in database')
+    sentence_id: int
+    char_start: int
+    char_end: int
+
+    token_ids: List[int] = Field(default_factory=list)
+    annotation: Optional[Union[FormulaAnnotation, str]]
 
 
 class UserInfo(BaseModel):
