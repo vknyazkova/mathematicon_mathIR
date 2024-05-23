@@ -2,8 +2,7 @@ from typing import Tuple, List, Optional, Generator
 
 from spacy import Language
 
-from ..repositories.transcript_repo import TranscriptRepository
-from ..repositories.lecture_repo import LectureRepository
+from ..services.lecture_transcript_service import LectureTranscriptService
 from ..models.html_models import HTMLWord, HTMLSentence, QueryInfo, HTMLSpan
 from ..model import Sentence, Token
 
@@ -11,11 +10,9 @@ from ..model import Sentence, Token
 class SearchService:
     def __init__(self,
                  nlp: Language,
-                 lecture_repo: LectureRepository,
-                 transcript_repo: TranscriptRepository):
-        self.lecture_repo = lecture_repo
-        self.transcript_repo = transcript_repo
+                 lecture_transcript_service: LectureTranscriptService):
         self.nlp = nlp
+        self.lecture_transcript_service = lecture_transcript_service
 
     @staticmethod
     def find_pattern_in_target(pattern: List[str],
@@ -130,13 +127,13 @@ class SearchService:
     def _create_html_sentence(self,
                               sentence: Sentence,
                               token_colors: List[str]) -> HTMLSentence:
-        left_context, right_context = self.transcript_repo.sentence_context(sentence)
+        left_context, right_context = self.lecture_transcript_service.get_sentence_context(sentence)
         html_sentence = HTMLSentence(
             id=sentence.sentence_id,
             tokens=list(self._html_tokens_generator(sentence.tokens, token_colors)),
             left=left_context,
             right=right_context,
-            yb_link=self.transcript_repo.get_sentence_yb_link(sentence)
+            yb_link=self.lecture_transcript_service.get_sentence_yb_link(sentence)
         )
         return html_sentence
 
@@ -157,18 +154,16 @@ class SearchService:
     def exactMatchSearch(self,
                            query: str) -> Tuple[QueryInfo, List[HTMLSentence]]:
         query_info = self._create_query_info(query)
-        with self.transcript_repo:
-            found_sents = self.transcript_repo.search_phrase(query)
-            search_result = self._construct_search_result(query_info, found_sents, by_lemma=False)
+        found_sents = self.lecture_transcript_service.exact_match_search(query)
+        search_result = self._construct_search_result(query_info, found_sents, by_lemma=False)
         return query_info, search_result
 
     def lemmaSearch(self,
                     query: str) -> Tuple[QueryInfo, List[HTMLSentence]]:
         query_info = self._create_query_info(query)
         query_match_pattern = [t.lemma for t in query_info.tokens]
-        with self.transcript_repo:
-            found_sents = self.transcript_repo.search_lemmatized(query_match_pattern)
-            search_result = self._construct_search_result(query_info, found_sents, by_lemma=True)
+        found_sents = self.lecture_transcript_service.lemmatized_search(query_match_pattern)
+        search_result = self._construct_search_result(query_info, found_sents, by_lemma=True)
         return query_info, search_result
 
     def searchByFormula(self,

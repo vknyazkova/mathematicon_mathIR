@@ -6,6 +6,7 @@ from spacy import Language
 from mathematicon.backend.services.search_service import SearchService
 from mathematicon.backend.repositories.lecture_repo import LectureRepository
 from mathematicon.backend.repositories.transcript_repo import TranscriptRepository
+from mathematicon.backend.services.lecture_transcript_service import LectureTranscriptService
 from mathematicon.backend.models.html_models import QueryInfo, HTMLWord, HTMLSpan
 from mathematicon.backend.model import Token
 
@@ -13,9 +14,8 @@ from mathematicon.backend.model import Token
 class TestSearchService(unittest.TestCase):
     def setUp(self):
         mock_nlp = MagicMock(spec=Language)
-        mosk_lecure_repo = MagicMock(spec=LectureRepository)
-        mosk_transcript_repo = MagicMock(spec=TranscriptRepository)
-        self.search_service = SearchService(mock_nlp, mosk_lecure_repo, mosk_transcript_repo)
+        mock_transcript_servoce = MagicMock(spec=LectureTranscriptService)
+        self.search_service = SearchService(mock_nlp, mock_transcript_servoce)
 
     def test_find_pattern_in_target(self):
         pattern1 = ['три']

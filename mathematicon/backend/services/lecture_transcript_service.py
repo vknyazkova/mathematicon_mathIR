@@ -1,5 +1,5 @@
 import os
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Tuple
 
 from spacy import Language
 
@@ -14,14 +14,13 @@ class LectureTranscriptService:
         self.transcript_repo = transcript_repo
         self.nlp = nlp
 
-        if 'conllu_formatter' not in [pipe[0] for pipe in self.nlp.pipeline]:
-            self.nlp.add_pipe("conll_formatter", last=True, config={'include_headers': True})
-
     def parse_transcript(self,
                          transcript: str,
                          text_id: Optional[int] = None,
                          save_to_conllu: Optional[Union[str, os.PathLike]] = None) -> List[Sentence]:
 
+        if 'conllu_formatter' not in [pipe[0] for pipe in self.nlp.pipeline]:
+            self.nlp.add_pipe("conll_formatter", last=True, config={'include_headers': True})
         doc = self.nlp(transcript)
         if save_to_conllu is not None:
             with open(save_to_conllu, "w", encoding="utf-8") as f:
@@ -62,7 +61,24 @@ class LectureTranscriptService:
                        transcript: str,
                        text_id: int):
         sentences = self.parse_transcript(transcript, text_id)
-        self.transcript_repo.add_transcript(sentences)
+        with self.transcript_repo:
+            self.transcript_repo.add_transcript(sentences)
+
+    def get_sentence_context(self, sentence: Sentence) -> Tuple[Optional[str], Optional[str]]:
+        with self.transcript_repo:
+            return self.transcript_repo.sentence_context(sentence)
+
+    def get_sentence_yb_link(self, sentence: Sentence) -> str:
+        with self.transcript_repo:
+            return self.transcript_repo.get_sentence_yb_link(sentence)
+
+    def exact_match_search(self, text: str) -> List[Sentence]:
+        with self.transcript_repo:
+            return self.transcript_repo.search_phrase(text)
+
+    def lemmatized_search(self, lemmatized_query: List[str]) -> List[Sentence]:
+        with self.transcript_repo:
+            return self.transcript_repo.search_lemmatized(lemmatized_query)
 
 
 if __name__ == '__main__':
