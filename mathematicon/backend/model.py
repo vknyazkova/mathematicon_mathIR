@@ -44,7 +44,7 @@ class FormulaAnnotation(BaseModel):
 
 class AnnotationFragment(BaseModel):
     annotation_id: Optional[int] = Field(None, description='Annotation ID in database')
-    sentence_id: int
+    sentence_id: Optional[int]
     char_start: int
     char_end: int
 

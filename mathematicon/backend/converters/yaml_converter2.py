@@ -12,8 +12,6 @@ from yaml.parser import ParserError
 from ..model import MathLecture, Sentence
 from ..services.lecture_transcript_service import LectureTranscriptService
 from ..services.math_lecture_service import MathLectureService
-from ..repositories.lecture_repo import LectureRepository
-from ..repositories.transcript_repo import TranscriptRepository
 
 from ..models.db_data_models import DatabaseText
 from ..models.database import TextDBHandler
@@ -22,7 +20,11 @@ from ..models.database import TextDBHandler
 class YamlConverter:
     def __init__(self,
                  filepaths: Iterable[Union[str, os.PathLike]],
+                 lecture_service: MathLectureService,
+                 transcript_service: LectureTranscriptService,
                  text_preprocess: Callable[[str], str] = None):
+        self.lecture_service = lecture_service
+        self.transcript_service = transcript_service
         if not text_preprocess:
             text_preprocess = self._remove_double_spaces
         self.yaml_contents = self._load_yamls(filepaths, text_preprocess)
@@ -60,26 +62,18 @@ class YamlConverter:
         return files_info
 
     def to_conllu(self,
-                  nlp: Language,
                   dest_folder: Union[str, os.PathLike]) -> Iterable[Path]:
         dest_folder = Path(dest_folder).resolve()
         dest_folder.mkdir(parents=True, exist_ok=True)
 
-        if 'conllu_formatter' not in [pipe[0] for pipe in nlp.pipeline]:
-            nlp.add_pipe("conll_formatter", last=True, config={'include_headers': True})
-
         written_files = []
         for file, info in self.yaml_contents.items():
-            doc = nlp(info['text'])
             result_path = Path(dest_folder, file.with_suffix(".conllu").name)
-            with open(result_path, "w", encoding="utf-8") as f:
-                f.write(doc._.conll_str)
+            self.transcript_service.save_to_conllu(info['text'], result_path)
             written_files.append(result_path)
         return written_files
 
-    def to_database(self,
-                    lecture_service: MathLectureService,
-                    transcript_service: LectureTranscriptService):
+    def to_database(self):
         for file, info in self.yaml_contents.items():
             lecture = MathLecture(
                 youtube_link=info['youtube_link'],
@@ -90,8 +84,8 @@ class YamlConverter:
                 difficulty_level=info['difficulty_level'],
                 math_branch=info['math_branch']
             )
-            lecture = lecture_service.add_lecture(lecture)
-            transcript_service.add_transcript(info['text'], lecture.lecture_id)
+            lecture = self.lecture_service.add_lecture(lecture)
+            self.transcript_service.add_transcript(info['text'], lecture.lecture_id)
 
 
 def update_ud_annot(conllu_file: Union[str, os.PathLike],

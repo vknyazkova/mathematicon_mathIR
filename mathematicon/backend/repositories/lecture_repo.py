@@ -115,3 +115,13 @@ class LectureRepository:
             ))
             lecture.lecture_id = cur.fetchone()[0]
         return lecture
+
+    def get_lecture_id_from_filename(self,
+                                     filename: str) -> Optional[int]:
+        self.connect()
+        with self.conn:
+            cur = self.conn.execute('''
+            SELECT id
+            FROM texts
+            WHERE filename = ?''', (filename, ))
+            return cur.fetchone()[0]

@@ -1,2 +1,4 @@
 data_path: 'data/'
 db_name: 'mathematicon.db'
+ft_model: '/Users/viktoriaknazkova/Desktop/me/study/github_repos/TangentCFT/Models/FastText/opt_model.model'
+encoder: '/Users/viktoriaknazkova/Desktop/me/study/github_repos/TangentCFT/Models/Vocabulary/opt_encoder.tsv'

@@ -351,3 +351,12 @@ class TranscriptRepository:
         if tokens:
             sent = self._fetch_tokens_info(sent)
         return sent
+
+    def get_sentence_id_by_pos_in_lecture(self, lecture_id: int, pos_in_lecture: int) -> int:
+        self.connect()
+        with self.conn:
+            cur = self.conn.execute('''
+            SELECT id
+            FROM sents
+            WHERE text_id = ? AND pos_in_text = ?''', (lecture_id, pos_in_lecture))
+            return cur.fetchone()[0]

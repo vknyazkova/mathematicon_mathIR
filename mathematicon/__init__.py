@@ -9,3 +9,5 @@ with open(Path(HOME_PATH, 'config.yml'), 'r') as file:
 
 DATA_PATH = Path(HOME_PATH, config['data_path']).resolve()
 DB_PATH = Path(DATA_PATH, config['db_name']).resolve()
+FT_MODEL = str(Path(DATA_PATH, config['ft_model']).resolve())
+ENCODER = str(Path(DATA_PATH, config['encoder']).resolve())

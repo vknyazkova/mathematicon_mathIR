@@ -8,4 +8,5 @@ class MathLectureService:
         self.lecture_repo = lecture_repo
 
     def add_lecture(self, lecture: MathLecture) -> MathLecture:
-        return self.lecture_repo.add_lecture(lecture)
+        with self.lecture_repo:
+            return self.lecture_repo.add_lecture(lecture)

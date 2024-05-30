@@ -8,6 +8,8 @@ from .app import app, webdb, search_service, user_service
 from ..backend.model import SearchHistory
 from ..backend.models.mathtag_search import MathtagSearch
 
+from ..backend.models.html_models import HTMLAnnotated, HTMLSpan, HTMLSentence, HTMLWord
+
 mathtag_search = MathtagSearch(webdb)
 
 
@@ -40,6 +42,7 @@ def result(lang):
     else:
         userid = None
         starring = "false"
+
     if request.args['search_type'] == 'lemma':
         query_info, sents_info = search_service.lemmaSearch(query)
         hide_cap = 'false'
@@ -49,6 +52,9 @@ def result(lang):
     elif request.args['search_type'] == 'tag':
         query_info, sents_info = mathtag_search.search(query, userid)
         hide_cap = 'true'
+    elif request.args['search_type'] == 'formula':
+        query_info, sents_info = search_service.searchByFormula(query)
+        hide_cap = 'true'
     else:
         raise HTTPError
 
@@ -56,7 +62,7 @@ def result(lang):
         sents_info = user_service.personalise_search_results(current_user.user_info, search_results=sents_info)
 
     return render_template(
-        "result.html",
+        "result2.html",
         main_lan=lang,
         query_info=query_info,
         sents_info=sents_info,

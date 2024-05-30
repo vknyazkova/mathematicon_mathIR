@@ -66,3 +66,30 @@ class MorphologyCorrectionHandler:
                     )
                     print(error_msg)
         return doc
+
+
+if __name__ == '__main__':
+    import spacy
+    from spacy.language import Language
+
+    @Language.factory(
+        "morphology_corrector",
+        assigns=["token.lemma", "token.tag"],
+        requires=["token.pos"],
+        default_config={"mode": "ptcp+conv"},
+    )
+    def morphology_corrector(nlp, name, mode):
+        return MorphologyCorrectionHandler(mode=mode)
+
+
+    nlp = spacy.load("ru_core_news_sm", exclude=["ner"])
+    # nlp.add_pipe('morphology_corrector', after='lemmatizer')
+
+    test_text = 'Две шестых – это не что иное, как одна треть.'
+    doc = nlp(test_text)
+    for sent in doc.sents:
+        i = 0
+        for j, t in enumerate(sent):
+            print(f"Token(token_text='{t.text}', whitespace={True if t.whitespace_ else False}, pos_tag='{t.tag_}', lemma='{t.lemma_}', morph_annotation='{str(t.morph)}',position_in_sentence={j}, char_offset_start={i}, char_offset_end={i + len(t.text)}),")
+            i += len(t.text) + len(t.whitespace_)
+        print()

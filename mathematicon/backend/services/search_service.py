@@ -1,4 +1,5 @@
 from typing import Tuple, List, Optional, Generator, Union
+import json
 
 from spacy import Language
 
@@ -61,6 +62,10 @@ class SearchService:
                              color='green')
             query_info.tokens.append(token)
         return query_info
+
+    def _create_formula_query_info(self,
+                                   formula: str) -> QueryInfo:
+        return QueryInfo(tokens=[HTMLWord(text=formula)])
 
     @staticmethod
     def _html_tokens_generator(tokens: List[Token],
@@ -157,7 +162,7 @@ class SearchService:
                 if len(annotated_tokens) > 0:
                     html_spans.append(
                         HTMLAnnotated(
-                            annotation=annot_fragment.annotation.tex_formula,
+                            annotation=json.dumps(annot_fragment.annotation.tex_formula),
                             spans=list(SearchService._html_tokens_generator(annotated_tokens, ['black' for _ in  annotated_tokens]))
                         )
                     )
@@ -222,12 +227,17 @@ class SearchService:
 
     def searchByFormula(self,
                         tex_formula: str) -> Tuple[QueryInfo, List[HTMLSentence]]:
-        # formula_fragments = self.formula_service.search_similar_formulas(tex_formula)
-        # sentences = {}
-        # html_sentences = []
-        # for frag in formula_fragments:
-        #     if frag.sentence_id not in sentences:
-        #         sentences[frag.sentence_id] = self.lecture_transcript_service.get_sentence_by_id(frag.sentence_id)
-        ...
+        formula_fragments = self.formula_service.search_similar_formulas(tex_formula)
+        sentences = {}
+        html_sentences = []
+        for frag in formula_fragments:
+            if frag.sentence_id not in sentences:
+                sentences[frag.sentence_id] = self.lecture_transcript_service.get_sentence_by_id(frag.sentence_id)
+            html_sentence = self._create_html_sentence_with_annotation(sentences[frag.sentence_id], frag)
+            html_sentences.append(html_sentence)
+        query_info = self._create_query_info(tex_formula)
+        return query_info, html_sentences
+
+
 
 
