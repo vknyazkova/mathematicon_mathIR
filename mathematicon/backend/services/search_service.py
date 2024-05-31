@@ -74,7 +74,7 @@ class SearchService:
         Generates HTML tokens based on token information.
 
         Args:
-            tokens (Iterable[dict]): Iterable of token information.
+            tokens (List[Token]): List of token information.
 
         Yields:
             HTMLSpan or HTMLWord: HTMLSpan for punctuation tokens and HTMLWord for other tokens.
@@ -162,7 +162,7 @@ class SearchService:
                 if len(annotated_tokens) > 0:
                     html_spans.append(
                         HTMLAnnotated(
-                            annotation=json.dumps(annot_fragment.annotation.tex_formula),
+                            annotation=f'$${json.dumps(annot_fragment.annotation.tex_formula)[1:-1]}$$',
                             spans=list(SearchService._html_tokens_generator(annotated_tokens, ['black' for _ in  annotated_tokens]))
                         )
                     )
@@ -175,7 +175,7 @@ class SearchService:
         elif len(annotated_tokens) > 0:
             html_spans.append(
                 HTMLAnnotated(
-                    annotation=annot_fragment.annotation.tex_formula,
+                    annotation=f'$${json.dumps(annot_fragment.annotation.tex_formula)[1:-1]}$$',
                     spans=list(
                         SearchService._html_tokens_generator(annotated_tokens, ['black' for _ in annotated_tokens]))
                 )
@@ -194,7 +194,6 @@ class SearchService:
             right=right_context,
             yb_link=self.lecture_transcript_service.get_sentence_yb_link(sentence),
         )
-
 
     def _construct_search_result(self,
                                  query_info: QueryInfo,
