@@ -1,5 +1,6 @@
 import datetime
 from urllib.error import HTTPError
+import json
 
 from flask import render_template, redirect, url_for, request
 from flask_login import current_user
@@ -7,8 +8,6 @@ from flask_login import current_user
 from .app import app, webdb, search_service, user_service
 from ..backend.model import SearchHistory
 from ..backend.models.mathtag_search import MathtagSearch
-
-from ..backend.models.html_models import HTMLAnnotated, HTMLSpan, HTMLSentence, HTMLWord
 
 mathtag_search = MathtagSearch(webdb)
 
@@ -53,7 +52,7 @@ def result(lang):
         query_info, sents_info = mathtag_search.search(query, userid)
         hide_cap = 'true'
     elif request.args['search_type'] == 'formula':
-        query_info, sents_info = search_service.searchByFormula(query)
+        query_info, sents_info = search_service.searchByFormula(json.dumps(query)[1:-1])
         hide_cap = 'true'
     else:
         raise HTTPError

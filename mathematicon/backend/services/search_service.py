@@ -1,3 +1,4 @@
+import logging
 from typing import Tuple, List, Optional, Generator, Union
 import json
 
@@ -5,6 +6,7 @@ from spacy import Language
 
 from ..services.lecture_transcript_service import LectureTranscriptService
 from ..services.formula_annotation_service import FormulaAnnotationService
+from ..services.formula_search_service import FormulaSearchService
 from ..models.html_models import HTMLWord, HTMLSentence, QueryInfo, HTMLSpan, HTMLAnnotated
 from ..model import Sentence, Token, AnnotationFragment
 
@@ -13,10 +15,12 @@ class SearchService:
     def __init__(self,
                  nlp: Language,
                  lecture_transcript_service: LectureTranscriptService,
-                 formula_service: FormulaAnnotationService):
+                 formula_service: FormulaAnnotationService,
+                 formula_search_service: FormulaSearchService):
         self.nlp = nlp
         self.lecture_transcript_service = lecture_transcript_service
         self.formula_service = formula_service
+        self.formula_search_service = formula_search_service
 
     @staticmethod
     def find_pattern_in_target(pattern: List[str],
@@ -226,7 +230,8 @@ class SearchService:
 
     def searchByFormula(self,
                         tex_formula: str) -> Tuple[QueryInfo, List[HTMLSentence]]:
-        formula_fragments = self.formula_service.search_similar_formulas(tex_formula)
+        formula_annot = self.formula_search_service.search(tex_formula)
+        formula_fragments = self.formula_service.load_formulas_annot_fragments(formula_annot)
         sentences = {}
         html_sentences = []
         for frag in formula_fragments:

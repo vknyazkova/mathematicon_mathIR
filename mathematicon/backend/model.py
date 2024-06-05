@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+from dataclasses import dataclass
 from typing import List, Optional, Sequence, Union
 
 
@@ -34,6 +35,13 @@ class Sentence(BaseModel):
     lemmatized_sentence: str
     timecode_start: Optional[str]
     tokens: List[Token] = Field(default_factory=list)
+
+
+@dataclass
+class RankedFormulas:
+    ids: List[str]
+    formulas: List[str]
+    scores: List[float]
 
 
 class FormulaAnnotation(BaseModel):

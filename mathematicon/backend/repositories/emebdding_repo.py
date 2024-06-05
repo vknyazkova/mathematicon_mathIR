@@ -1,8 +1,9 @@
 from typing import Dict, List
 
+import numpy as np
 from chromadb import PersistentClient, EmbeddingFunction, Documents, Embeddings
 
-from ..model import FormulaAnnotation
+from ..model import FormulaAnnotation, RankedFormulas
 from TangentCFT.tangent_cft.tangent_cft_parser import TangentCFTParser
 from TangentCFT.tangent_cft.tangent_cft_back_end import TangentCFTBackEnd
 
@@ -42,13 +43,11 @@ class FormulaEmbeddingRepository:
         assert getattr(formula, 'fragment_id', None) is not None
         self.collection.delete(ids=[str(formula.fragment_id)])
 
-    def find_similar_formulas(self, tex_formula: str, top_n: int = 10) -> List[FormulaAnnotation]:
-        result = self.collection.query(query_texts=[tex_formula], n_results=top_n, include=['documents'])
-        formula_annotations = []
-        for i in range(top_n):
-            formula_annotations.append(FormulaAnnotation(
-                fragment_id=int(result['ids'][0][i]),
-                tex_formula=result['documents'][0][i],
-            ))
-        return formula_annotations
+    def find_similar_formulas(self, tex_formula: str, top_n: int = 10) -> RankedFormulas:
+        result = self.collection.query(query_texts=[tex_formula], n_results=top_n, include=['documents', 'distances'])
+        return RankedFormulas(
+            ids=result['ids'][0],
+            formulas=result['documents'][0],
+            scores=((1 - np.array(result['distances'][0])) / 2).tolist()
+        )
 

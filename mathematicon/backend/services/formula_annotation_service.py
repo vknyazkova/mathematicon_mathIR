@@ -21,13 +21,10 @@ class FormulaAnnotationService:
         self.transcript_repo = transcript_repo
         self.lecture_repo = lecture_repo
 
-    def search_similar_formulas(self, formula: str) -> List[AnnotationFragment]:
-
-        formula_annotations = self.embeddings_repo.find_similar_formulas(formula)
-
+    def load_formulas_annot_fragments(self, formulas: List[FormulaAnnotation]) -> List[AnnotationFragment]:
         fragments = []
         with self.annotation_repo:
-            for formula in formula_annotations:
+            for formula in formulas:
                 fragment = self.annotation_repo.get_annot_fragment_by_id(formula.fragment_id)
                 fragment.annotation = formula
                 fragments.append(fragment)
@@ -86,7 +83,6 @@ class FormulaAnnotationService:
             annot_fragment.annotation.fragment_id = annot_fragment.annotation_id
             self.embeddings_repo.delete_formula(annot_fragment.annotation)
             self.annotation_repo.conditional_delete_annot_fragment_by_id(annot_fragment.annotation_id)
-
 
 
 if __name__ == '__main__':

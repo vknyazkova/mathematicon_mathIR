@@ -15,6 +15,7 @@ from ..backend.services.user_service import UserService
 from ..backend.services.lecture_transcript_service import LectureTranscriptService
 from ..backend.services.formula_annotation_service import FormulaAnnotationService
 from ..backend.services.search_service import SearchService
+from ..backend.services.formula_search_service import FormulaSearchService, TFIDFRerankingModel, node_extractor
 
 from TangentCFT.tangent_cft.tangent_cft_back_end import TangentCFTBackEnd
 
@@ -29,8 +30,7 @@ lecture_repo = LectureRepository(DB_PATH)
 transcript_repo = TranscriptRepository(DB_PATH)
 annotation_repo = AnnotationRepository(DB_PATH)
 
-tangent_cft = TangentCFTBackEnd.load(encoder_map_path=ENCODER,
-                                     ft_model_path=FT_MODEL)
+tangent_cft = TangentCFTBackEnd.load(encoder_map_path=ENCODER, ft_model_path=FT_MODEL)
 embedder = TangentCFTEmbedding(tangent_cft=tangent_cft, mathml=False, slt=False)
 emebding_repo = FormulaEmbeddingRepository(str(DATA_PATH), emb_function=embedder)
 
@@ -42,5 +42,6 @@ formula_service = FormulaAnnotationService(
     annotation_repo=annotation_repo,
     formula_embeddings_repo=emebding_repo
 )
-
-search_service = SearchService(nlp, transcript_service, formula_service)
+reranker = TFIDFRerankingModel(analyzer=node_extractor, tfidf_weight=0.3)
+formula_search_service = FormulaSearchService(emebding_repo, reranker)
+search_service = SearchService(nlp, transcript_service, formula_service, formula_search_service)
